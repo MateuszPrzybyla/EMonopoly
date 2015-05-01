@@ -53,7 +53,17 @@ class GameServer(object):
         for connectedClient in self.connectedClients.keys():
             if connectedClient.socket == clientSocket:
                 self.connectedClients[connectedClient] = self.players[nick]
+                break
         print "Player %s joined the server" % nick
+
+    def notifyPlayerLeaveServer(self, clientSocket):
+        for connectedClient in self.connectedClients.keys():
+            if connectedClient.socket == clientSocket:
+                print "Player %s leaved the server" % self.connectedClients[connectedClient].name
+                self.players.pop(self.connectedClients[connectedClient].name)
+                self.connectedClients[connectedClient] = None
+                return True
+        return False
 
     def broadcastAllPlayers(self, response):
         if isinstance(response, Response):

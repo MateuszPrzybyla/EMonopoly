@@ -14,7 +14,7 @@ class RequestEncoder(JSONEncoder):
             return JSONEncoder.default(obj)
 
 class Request(object):
-    def __init__(self, action, requestData):
+    def __init__(self, action, requestData=None):
         self.action = action
         self.requestData = requestData
 

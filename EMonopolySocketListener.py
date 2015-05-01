@@ -34,7 +34,7 @@ class EMonopolySocketListener(Thread):
             self.handleReceiveError(e)
         else:
             if msg == '':
-                exception = ClientDisconnectedException()
+                exception = ClientDisconnectedException("Client has disconnected")
                 self.handleError(exception)
                 raise exception
             return msg.strip()

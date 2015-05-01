@@ -1,6 +1,7 @@
 import json
 
 from server.requestHandlers.JoinServerRequestHandler import JoinServerRequestHandler
+from server.requestHandlers.LeaveServerRequestHandler import LeaveServerRequestHandler
 from server.requestHandlers.ServerChatRequestHandler import ServerChatRequestHandler
 from server.requestHandlers.UnknownRequestHandler import UnknownRequestHandler
 
@@ -13,6 +14,7 @@ class RequestHandlerDispatcher(object):
         self.gameServer = gameServer
         self.handlersMap = {
             'JOIN_SERVER': JoinServerRequestHandler(self.gameServer),
+            'LEAVE_SERVER': LeaveServerRequestHandler(self.gameServer),
             'SERVER_CHAT_MSG': ServerChatRequestHandler(self.gameServer)
         }
         self.defaultHandler = UnknownRequestHandler()

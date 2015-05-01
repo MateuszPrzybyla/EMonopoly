@@ -16,7 +16,7 @@ class GameServerClient(object):
 
     def start(self):
         self.serverSocket.connect((self.host, self.port))
-        self.serverMessageListener = ServerMessageListener(self, self.serverSocket, self.clientApp)
+        self.serverMessageListener = ServerMessageListener(self.serverSocket)
         self.serverMessageListener.setDaemon(True)
         self.serverMessageListener.start()
 

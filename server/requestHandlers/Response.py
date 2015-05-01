@@ -16,7 +16,7 @@ class ResponseEncoder(JSONEncoder):
             return JSONEncoder.default(obj)
 
 class Response(object):
-    def __init__(self, action, success, message, responseData=None):
+    def __init__(self, action, success, message="", responseData=None):
         self.action = action
         self.success = success
         self.message = message

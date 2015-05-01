@@ -1,3 +1,4 @@
+import traceback
 from EMonopolySocketListener import EMonopolySocketListener
 
 from server.requestHandlers.RequestHandlerDispatcher import RequestHandlerDispatcher
@@ -18,7 +19,11 @@ class GameClient(EMonopolySocketListener):
         return self.messageHandlerDispatcher.handle(msg, self.socket)
 
     def handleError(self, error):
+        print "GameClient (%s) error: %s" % (self.socket, error)
+        traceback.print_exc()
         self.gameServer.notifyClientDisconnected(self)
 
     def handleReceiveError(self, error):
+        print "GameClient (%s) error: %s" % (self.socket, error)
+        traceback.print_exc()
         self.gameServer.notifyClientDisconnected(self)

@@ -36,38 +36,152 @@
                 on_press: root.joinServer(nickInput.text)
 
 <GameRoomScreen>:
+    chatController: chatContainer
     BoxLayout:
-        orientation: "horizontal"
+        orientation: "vertical"
         BoxLayout:
-            orientation: "vertical"
-            size_hint: (.6, 1)
-            canvas:
-                Color:
-                    rgb: 1, 0.7, 0.7
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
+            size_hint: (1, None)
+            height: 30
+            orientation: "horizontal"
             Label:
-                text: "Rooms area"
-                color: 0, 0, 0, 1
-        BoxLayout:
-            orientation: "vertical"
-            size_hint: (.4, 1)
-            ScrollView:
-                size_hint: (1, 0.7)
-                canvas:
-                    Color:
-                        rgb: 1, 0, 0
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-            TextInput:
-                id: chatMsg
-                multiline: True
-                font_size: '20dp'
-                size_hint: (1, 0.3)
+                id: loggedUserHeader
+                text: "Logged out"
             Button:
-                text: "Send"
-                size_hint: (1, None)
-                height: 40
-                on_press: root.sendServerChatMsg(chatMsg.text)
+                size_hint: (None, 1)
+                width: 100
+                text: "Log out"
+                color: 1, 1, 1, 1
+                background_color: [0.8, 0, 0, 1]
+                on_press: root.logOut()
+        BoxLayout:
+            orientation: "horizontal"
+            GameRoomController:
+                id: gameRoomContainer
+            ChatController:
+                id: chatContainer
+
+<ChatMessage>:
+    markup: True
+    size_hint: (1, None)
+    padding_y: 3
+    padding_x: 5
+    color: 0, 0, 0, 1
+    text_size: self.width, None
+    height: self.texture_size[1]
+    canvas.before:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<ChatController>:
+    msgList: msgList
+    orientation: "vertical"
+    size_hint: (.4, 1)
+    ScrollView:
+        size_hint: (1, 0.7)
+        scroll_y: 0
+        canvas.before:
+            Color:
+                rgb: 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        GridLayout:
+            id: msgList
+            cols: 1
+            size_hint_y: None
+            padding_vertical: 30
+            height: self.minimum_height
+    TextInput:
+        id: chatMsg
+        multiline: True
+        font_size: '20dp'
+        size_hint: (1, 0.3)
+    Button:
+        text: "Send"
+        size_hint: (1, None)
+        height: 40
+        on_press: root.sendServerChatMsg(chatMsg.text)
+
+<GameRoomController>:
+    orientation: "vertical"
+    size_hint: (.6, 1)
+    ScrollView:
+        canvas.before:
+            Color:
+                rgb: 1, 0.7, 0.7
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Label:
+            text: "Rooms area"
+            color: 0, 0, 0, 1
+    GridLayout:
+        size_hint: (1, None)
+        height: 40
+        cols: 2
+        rows: 1
+        Button:
+            text: "Join the room"
+            on_press: root.joinRoom()
+        Button:
+            text: "Create a room"
+            on_press: root.openCreateRoomPopup()
+
+<CreateRoomPopupLabel@Label>:
+    pos_hint: {'center_x': .5, 'y': 0.2}
+
+<CreateRoomPopupInput@TextInput>:
+    size_hint: (0.8, None)
+    pos_hint: {'center_x': .5, 'y': 0.3}
+    height: 40
+    multiline: False
+
+<CreateRoomPopup>:
+    title: "Create new room"
+    size_hint: (0.8, 0.8)
+    BoxLayout:
+        orientation: "vertical"
+        GridLayout:
+            cols: 2
+            rows: 3
+            RelativeLayout:
+                CreateRoomPopupLabel:
+                    text: "Nazwa"
+                CreateRoomPopupInput:
+                    id: roomName
+            RelativeLayout:
+                Label:
+                    text: "Liczba graczy"
+                    pos_hint: {'center_x': .5, 'y': 0.2}
+                Spinner:
+                    id: playersNumber
+                    text: "2"
+                    values: ("2", "3", "4", "5", "6")
+                    pos_hint: {'center_x': .5, 'y': 0.3}
+                    size_hint: (0.8, None)
+                    height: 40
+            relativelayout:
+                Label:
+                    text: "Gra prywatna"
+                    pos_hint: {'center_x': .5, 'y': 0.2}
+                CheckBox:
+                    id: privateGame
+                    pos_hint: {'center_x': .5, 'y': 0.3}
+                    size_hint: (0.8, None)
+                    on_active: root.setPasswordActive(self, roomPassword)
+                    height: 40
+            RelativeLayout:
+                Label:
+                    text: "Hasło"
+                    pos_hint: {'center_x': .5, 'y': 0.2}
+                CreateRoomPopupInput:
+                    id: roomPassword
+                    disabled: True
+        Button:
+            size_hint: (1, None)
+            height: 40
+            text: "Submit"
+            on_press: root.createRoomRequest(roomName.text, playersNumber.text, privateGame.active, roomPassword.text)

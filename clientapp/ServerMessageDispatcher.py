@@ -1,14 +1,18 @@
 import json
 from clientapp.responseHandlers.JoinServerResponseHandler import JoinServerResponseHandler
+from clientapp.responseHandlers.LeaveServerResponseHandler import LeaveServerResponseHandler
+from clientapp.responseHandlers.ServerChatMsgHandler import ServerChatMsgHandler
 from clientapp.responseHandlers.UnknownMessageHandler import UnknownMessageHandler
 
 __author__ = 'mateusz'
 
+
 class ServerMessageDispatcher(object):
-    def __init__(self, clientApp):
-        self.clientApp = clientApp
+    def __init__(self):
         self.handlersMap = {
-            'JOIN_SERVER': JoinServerResponseHandler(self.clientApp, self.clientApp.joinServerScreen)
+            'JOIN_SERVER': JoinServerResponseHandler(),
+            'LEAVE_SERVER': LeaveServerResponseHandler(),
+            'SERVER_CHAT_MSG': ServerChatMsgHandler()
         }
         self.defaultHandler = UnknownMessageHandler()
 
@@ -17,7 +21,7 @@ class ServerMessageDispatcher(object):
         try:
             msg = json.loads(jsonMsg)
         except ValueError:
-            handler = UnknownMessageHandler()
+            self.defaultHandler.handleRequest(msg, jsonMsg, gameServerSocket)
         else:
             if msg['action'] in self.handlersMap:
                 handler = self.handlersMap[msg['action']]
