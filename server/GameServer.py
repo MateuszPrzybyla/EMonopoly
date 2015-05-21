@@ -1,5 +1,4 @@
 import socket
-from threading import Lock
 
 from server.ClientPlayer import ClientPlayer
 from server.GameClient import GameClient
@@ -14,8 +13,7 @@ class GameServer(object):
         self.port = port
         self.connectedClients = dict()
         self.players = dict()
-        self.playersLock = Lock()
-        self.rooms = list()
+        self.rooms = dict()
 
     def run(self):
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,11 +41,12 @@ class GameServer(object):
     def notifyClientDisconnected(self, client):
         client.socket.close()
         if self.connectedClients[client]:
+            if self.connectedClients[client] in self.rooms:
+                self.rooms.pop(self.connectedClients[client])
             self.players.pop(self.connectedClients[client].name)
         self.connectedClients.pop(client)
         print "Client %s disconnected. Connected clients: %d" % (client.address, len(self.connectedClients))
 
-    # to chyba idzie 2 razy?
     def notifyNewPlayer(self, nick, clientSocket):
         self.players[nick] = ClientPlayer(nick, clientSocket)
         for connectedClient in self.connectedClients.keys():
@@ -60,10 +59,16 @@ class GameServer(object):
         for connectedClient in self.connectedClients.keys():
             if connectedClient.socket == clientSocket:
                 print "Player %s leaved the server" % self.connectedClients[connectedClient].name
+                if self.connectedClients[connectedClient] in self.rooms:
+                    self.rooms.pop(self.connectedClients[connectedClient])
                 self.players.pop(self.connectedClients[connectedClient].name)
                 self.connectedClients[connectedClient] = None
                 return True
         return False
+
+    def notifyNewRoom(self, clientPlayer, room):
+        self.rooms[clientPlayer] = room
+        print "Player %s created a room: %s (id: %d)" % (clientPlayer.name, room.name, room.id)
 
     def broadcastAllPlayers(self, response):
         if isinstance(response, Response):

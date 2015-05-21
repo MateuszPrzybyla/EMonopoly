@@ -1,3 +1,4 @@
+from threading import Lock
 from server.requestHandlers.RequestHandler import RequestHandler
 from server.requestHandlers.Response import Response
 
@@ -14,13 +15,14 @@ class JoinServerRequestHandler(RequestHandler):
     def __init__(self, gameServer):
         super(JoinServerRequestHandler, self).__init__()
         self.gameServer = gameServer
+        self.newPlayerLock = Lock()
 
     def handle(self, msg, rawMsg, clientSocket, clientPlayer):
-        with self.gameServer.playersLock:
-            if clientPlayer:
-                return JoinServerResponse(False, "Already joined as a %s" % clientPlayer.name, msg['nick'])
-            if len(msg['nick']) < 2:
-                return JoinServerResponse(False, "Nick must have at least 2 characters", msg['nick'])
+        if clientPlayer:
+            return JoinServerResponse(False, "Already joined as a %s" % clientPlayer.name, msg['nick'])
+        if len(msg['nick']) < 2:
+            return JoinServerResponse(False, "Nick must have at least 2 characters", msg['nick'])
+        with self.newPlayerLock:
             if msg['nick'] in self.gameServer.players:
                 return JoinServerResponse(False, "Nick is already used by another player", msg['nick'])
             self.gameServer.notifyNewPlayer(msg['nick'], clientSocket)

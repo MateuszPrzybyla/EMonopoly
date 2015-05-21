@@ -1,4 +1,6 @@
 import json
+from clientapp.responseHandlers.CreateRoomHandler import CreateRoomHandler
+from clientapp.responseHandlers.GetRoomsResponseHandler import GetRoomsResponseHandler
 from clientapp.responseHandlers.JoinServerResponseHandler import JoinServerResponseHandler
 from clientapp.responseHandlers.LeaveServerResponseHandler import LeaveServerResponseHandler
 from clientapp.responseHandlers.ServerChatMsgHandler import ServerChatMsgHandler
@@ -12,7 +14,9 @@ class ServerMessageDispatcher(object):
         self.handlersMap = {
             'JOIN_SERVER': JoinServerResponseHandler(),
             'LEAVE_SERVER': LeaveServerResponseHandler(),
-            'SERVER_CHAT_MSG': ServerChatMsgHandler()
+            'SERVER_CHAT_MSG': ServerChatMsgHandler(),
+            'CREATE_ROOM': CreateRoomHandler(),
+            'GET_ROOMS': GetRoomsResponseHandler()
         }
         self.defaultHandler = UnknownMessageHandler()
 

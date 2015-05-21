@@ -37,6 +37,7 @@
 
 <GameRoomScreen>:
     chatController: chatContainer
+    gameRoomController: gameRoomContainer
     BoxLayout:
         orientation: "vertical"
         BoxLayout:
@@ -59,6 +60,7 @@
                 id: gameRoomContainer
             ChatController:
                 id: chatContainer
+                msgType: "SERVER"
 
 <ChatMessage>:
     markup: True
@@ -103,25 +105,31 @@
         text: "Send"
         size_hint: (1, None)
         height: 40
-        on_press: root.sendServerChatMsg(chatMsg.text)
+        on_press: root.sendChatMsg(root.msgType, chatMsg.text)
 
 <GameRoomController>:
+    roomsArea: roomsArea
     orientation: "vertical"
     size_hint: (.6, 1)
     ScrollView:
+        scroll_y: 0
+        size_hint: (1, 0.7)
         canvas.before:
             Color:
                 rgb: 1, 0.7, 0.7
             Rectangle:
                 pos: self.pos
                 size: self.size
-        Label:
-            text: "Rooms area"
-            color: 0, 0, 0, 1
+        GridLayout:
+            id: roomsArea
+            cols: 1
+            size_hint_y: None
+            padding_vertical: 30
+            height: self.minimum_height
     GridLayout:
         size_hint: (1, None)
         height: 40
-        cols: 2
+        cols: 3
         rows: 1
         Button:
             text: "Join the room"
@@ -129,6 +137,9 @@
         Button:
             text: "Create a room"
             on_press: root.openCreateRoomPopup()
+        Button:
+            text: "Refresh rooms"
+            on_press: root.refreshRooms()
 
 <CreateRoomPopupLabel@Label>:
     pos_hint: {'center_x': .5, 'y': 0.2}
@@ -142,6 +153,7 @@
 <CreateRoomPopup>:
     title: "Create new room"
     size_hint: (0.8, 0.8)
+    errorLabel: errorLabel
     BoxLayout:
         orientation: "vertical"
         GridLayout:
@@ -163,7 +175,7 @@
                     pos_hint: {'center_x': .5, 'y': 0.3}
                     size_hint: (0.8, None)
                     height: 40
-            relativelayout:
+            RelativeLayout:
                 Label:
                     text: "Gra prywatna"
                     pos_hint: {'center_x': .5, 'y': 0.2}
@@ -180,8 +192,112 @@
                 CreateRoomPopupInput:
                     id: roomPassword
                     disabled: True
-        Button:
-            size_hint: (1, None)
+        Label:
+            id: errorLabel
             height: 40
-            text: "Submit"
-            on_press: root.createRoomRequest(roomName.text, playersNumber.text, privateGame.active, roomPassword.text)
+            size_hint: (1, None)
+            text: ""
+            color: 1, 0, 0, 1
+        BoxLayout:
+            orientation: "horizontal"
+            height: 40
+            size_hint: (1, None)
+            Button:
+                size_hint: (1, None)
+                height: 40
+                text: "Submit"
+                on_press: root.createRoomRequest(roomName.text, playersNumber.text, privateGame.active, roomPassword.text)
+            Button:
+                size_hint: (1, None)
+                height: 40
+                text: "Cancel"
+                on_press: root.dismiss()
+
+<RoomListElement>:
+    roomNumber: roomNumber
+    roomName: roomName
+    playersNumber: playersNumber
+    roomPlayers: roomPlayers
+    orientation: "horizontal"
+    padding_y: 3
+    padding_x: 5
+    canvas.before:
+        Color:
+            rgb: self.color, self.color, self.color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    size_hint: (1, None)
+    height: 40
+    Label:
+        id: roomNumber
+        text: ""
+        pos: (0, 0)
+        size_hint: (None, 1)
+        width: 70
+        color: 0, 0, 0, 1
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: (1, 0.4)
+            Label:
+                size_hint: (None, 1)
+                id: roomName
+                text: "room"
+                color: 0, 0, 0, 1
+            Label:
+                size_hint: (None, 1)
+                text: " l. graczy: "
+                color: 0, 0, 0, 1
+            Label:
+                size_hint: (None, 1)
+                id: playersNumber
+                text: "5"
+                color: 0, 0, 0, 1
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: (1, 0.4)
+            Label:
+                size_hint: (None, 1)
+                id: roomPlayers
+                text: "gracze"
+                color: 0, 0, 0, 1
+    Button:
+        size_hint: (None, 0.8)
+        width: 100
+        text: "Join"
+        on_press: root.joinRoom()
+
+<SingleRoomGame>:
+    Label:
+        text: "GRA!!!"
+
+<SingleRoomScreen>:
+    chatController: chatContainer
+    singleRoomGame: singleRoomGame
+    roomName: roomName
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            size_hint: (1, None)
+            height: 30
+            orientation: "horizontal"
+            Label:
+                id: roomName
+                text: "Room Name"
+            Button:
+                size_hint: (None, 1)
+                width: 100
+                text: "Quit"
+                color: 1, 1, 1, 1
+                background_color: [0.8, 0, 0, 1]
+                on_press: root.quitRoom()
+        BoxLayout:
+            orientation: "horizontal"
+            SingleRoomGame:
+                id: singleRoomGame
+            ChatController:
+                id: chatContainer
+                msgType: "ROOM"
+

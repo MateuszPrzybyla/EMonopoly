@@ -1,4 +1,6 @@
 import json
+from server.requestHandlers.CreateRoomRequestHandler import CreateRoomRequestHandler
+from server.requestHandlers.GetRoomsRequestHandler import GetRoomsRequestHandler
 
 from server.requestHandlers.JoinServerRequestHandler import JoinServerRequestHandler
 from server.requestHandlers.LeaveServerRequestHandler import LeaveServerRequestHandler
@@ -15,7 +17,9 @@ class RequestHandlerDispatcher(object):
         self.handlersMap = {
             'JOIN_SERVER': JoinServerRequestHandler(self.gameServer),
             'LEAVE_SERVER': LeaveServerRequestHandler(self.gameServer),
-            'SERVER_CHAT_MSG': ServerChatRequestHandler(self.gameServer)
+            'SERVER_CHAT_MSG': ServerChatRequestHandler(self.gameServer),
+            'CREATE_ROOM': CreateRoomRequestHandler(self.gameServer),
+            'GET_ROOMS': GetRoomsRequestHandler(self.gameServer)
         }
         self.defaultHandler = UnknownRequestHandler()
 

@@ -1,3 +1,5 @@
+from clientapp.gui.SingleRoomScreen import SingleRoomScreen
+
 __author__ = 'mateusz'
 
 from kivy.uix.screenmanager import ScreenManager, NoTransition
@@ -13,6 +15,9 @@ Factory.register('ChatController', module='clientapp.gui.ChatController')
 Factory.register('ChatMessage', module='clientapp.gui.ChatController')
 Factory.register('GameRoomController', module='clientapp.gui.GameRoomController')
 Factory.register('CreateRoomPopup', module='clientapp.gui.CreateRoomPopup')
+Factory.register('RoomListElement', module='clientapp.gui.RoomListElement')
+Factory.register('SingleRoomGame', module='clientapp.gui.SingleRoomGame')
+
 
 class EMonopolyClientApp(App):
     def __init__(self, **kwargs):
@@ -26,10 +31,12 @@ class EMonopolyClientApp(App):
     def build(self):
         self.joinServerScreen = JoinServerScreen(name='typeNickname')
         self.gameRoomScreen = GameRoomScreen(name='gameRoom')
+        self.singleRoomScreen = SingleRoomScreen(name='singleRoomScreen')
 
         self.screenManager = ScreenManager()
         self.screenManager.add_widget(self.joinServerScreen)
         self.screenManager.add_widget(self.gameRoomScreen)
+        self.screenManager.add_widget(self.singleRoomScreen)
         self.screenManager.transition = NoTransition(duration=0)
         self.gameServerClient.start()
         return self.screenManager
@@ -40,8 +47,12 @@ class EMonopolyClientApp(App):
     def getData(self, key):
         return self.data[key]
 
-    def changeScreen(self, screenName):
+    def changeScreen(self, screenName, args={}):
+        screen = self.screenManager.get_screen(screenName)
+        screen.load(args)
         self.screenManager.current = screenName
 
+    def currentScreen(self):
+        return self.screenManager.current_screen
 
 EMonopolyClientApp().run()

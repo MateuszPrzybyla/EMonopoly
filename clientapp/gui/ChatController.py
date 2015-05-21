@@ -1,5 +1,5 @@
 from kivy.app import App
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from clientapp.requests.ServerChatMsg import ServerChatMsg
@@ -13,6 +13,7 @@ class ChatMessage(Label):
 
 class ChatController(BoxLayout):
     msgList = ObjectProperty()
+    msgType = StringProperty()
 
     def __init__(self, **kwargs):
         super(ChatController, self).__init__(**kwargs)
@@ -24,10 +25,13 @@ class ChatController(BoxLayout):
     def clearSendMsg(self):
         self.ids['chatMsg'].text = ''
 
-    def appendServerMessage(self, msg, author, timestamp):
+    def appendMessage(self, msg, author, timestamp):
         self.msgList.add_widget(ChatMessage(text='[b]%s:[/b] %s' % (author, msg)))
         print "Message from %s, content %s, timestamp %s" % (author, msg, "")
 
-    def sendServerChatMsg(self, msg):
-        self.gameServerClient.send(ServerChatMsg(msg))
+    def sendChatMsg(self, msgType, msg):
+        if msgType == 'SERVER':
+            self.gameServerClient.send(ServerChatMsg(msg))
+        elif msgType == 'ROOM':
+            print "Sending room msg: " + msg
         self.clearSendMsg()

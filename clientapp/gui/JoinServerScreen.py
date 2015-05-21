@@ -1,11 +1,11 @@
 from kivy.app import App
-from kivy.uix.screenmanager import Screen
+from clientapp.gui.EMonopolyScreen import EMonopolyScreen
 from clientapp.requests.JoinServerRequest import JoinServerRequest
 
 __author__ = 'mateusz'
 
 
-class JoinServerScreen(Screen):
+class JoinServerScreen(EMonopolyScreen):
     def __init__(self, **kwargs):
         super(JoinServerScreen, self).__init__(**kwargs)
 

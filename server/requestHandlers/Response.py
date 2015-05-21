@@ -1,5 +1,7 @@
 import json
 from json.encoder import JSONEncoder
+from server.ClientPlayer import ClientPlayer
+from server.GameRoom import GameRoom
 
 __author__ = 'mateusz'
 

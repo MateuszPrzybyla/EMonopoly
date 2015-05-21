@@ -10,5 +10,5 @@ class ServerChatMsgHandler(object):
 
     def handleRequest(self, msg, jsonMsg, gameServerSocket):
         if msg['success']:
-            self.chatController.appendServerMessage(msg['responseData']['content'], msg['responseData']['author'],
+            self.chatController.appendMessage(msg['responseData']['content'], msg['responseData']['author'],
                                                     "")

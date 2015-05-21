@@ -13,8 +13,7 @@ class LeaveServerRequestHandler(RequestHandler):
         self.gameServer = gameServer
 
     def handle(self, msg, rawMsg, clientSocket, clientPlayer):
-        with self.gameServer.playersLock:
-            if clientPlayer:
-                return LeaveServerResponse(self.gameServer.notifyPlayerLeaveServer(clientSocket), "")
-            else:
-                return LeaveServerResponse(False, "Unknown player")
+        if clientPlayer:
+            return LeaveServerResponse(self.gameServer.notifyPlayerLeaveServer(clientSocket), "")
+        else:
+            return LeaveServerResponse(False, "Unknown player")
