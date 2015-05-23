@@ -4,6 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from clientapp.gui.CreateRoomPopup import CreateRoomPopup
 from clientapp.gui.RoomListElement import RoomListElement
 from clientapp.requests.GetRoomsRequest import GetRoomsRequest
+from clientapp.requests.JoinRoomRequest import JoinRoomRequest
 
 __author__ = 'mateusz'
 
@@ -16,6 +17,7 @@ class GameRoomController(BoxLayout):
 
     def joinRoom(self, roomId):
         print "Joining room %d" % roomId
+        self.gameServerClient.send(JoinRoomRequest(roomId))
 
     def openCreateRoomPopup(self):
         self.createRoomPopup = CreateRoomPopup()
@@ -32,4 +34,4 @@ class GameRoomController(BoxLayout):
 
     def populateRooms(self, rooms):
         for room in rooms:
-            self.roomsArea.add_widget(RoomListElement(room['id'], room['owner'], room['playersNumber'], ["Jan", "Marysia"], self))
+            self.roomsArea.add_widget(RoomListElement(room['id'], room['owner'], room['playersNumber'], room['players'], self))

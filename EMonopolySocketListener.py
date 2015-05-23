@@ -19,9 +19,8 @@ class EMonopolySocketListener(Thread):
                 if not msg:
                     continue
                 response = self.handle(msg)
-                if not response:
-                    continue
-                self.send(response)
+                if response:
+                    self.send(response)
         except ClientDisconnectedException:
             pass
         except Exception as e:

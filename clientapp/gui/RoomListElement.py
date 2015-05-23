@@ -16,6 +16,10 @@ class RoomListElement(BoxLayout):
         self.roomNumber.text = "#%d" % roomNumber
         self.roomName.text = roomName
         self.playersNumber.text = playersNumber
+        if players:
+            self.roomPlayers.text = "[b]%s[/b]%s" % (players[0], ', '.join(players[1:]))
+        else:
+            self.roomPlayers.text = ""
         self.roomController = roomController
 
     def joinRoom(self):

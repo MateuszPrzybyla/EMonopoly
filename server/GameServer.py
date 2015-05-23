@@ -38,12 +38,15 @@ class GameServer(object):
             if connectedClient.socket == socket:
                 return self.connectedClients[connectedClient]
 
+    def getRoom(self, id):
+        for room in self.rooms.values():
+            if room.id == id:
+                return room
+
     def notifyClientDisconnected(self, client):
         client.socket.close()
         if self.connectedClients[client]:
-            if self.connectedClients[client] in self.rooms:
-                self.rooms.pop(self.connectedClients[client])
-            self.players.pop(self.connectedClients[client].name)
+            self.clearPlayerData(self.connectedClients[client])
         self.connectedClients.pop(client)
         print "Client %s disconnected. Connected clients: %d" % (client.address, len(self.connectedClients))
 
@@ -59,16 +62,25 @@ class GameServer(object):
         for connectedClient in self.connectedClients.keys():
             if connectedClient.socket == clientSocket:
                 print "Player %s leaved the server" % self.connectedClients[connectedClient].name
-                if self.connectedClients[connectedClient] in self.rooms:
-                    self.rooms.pop(self.connectedClients[connectedClient])
-                self.players.pop(self.connectedClients[connectedClient].name)
+                self.clearPlayerData(self.connectedClients[connectedClient])
                 self.connectedClients[connectedClient] = None
                 return True
         return False
 
+    def clearPlayerData(self, clientPlayer):
+        if clientPlayer in self.rooms:
+            self.rooms.pop(clientPlayer)
+        self.players.pop(clientPlayer.name)
+        clientPlayer.joinedRoom.players.remove(clientPlayer)
+
     def notifyNewRoom(self, clientPlayer, room):
         self.rooms[clientPlayer] = room
         print "Player %s created a room: %s (id: %d)" % (clientPlayer.name, room.name, room.id)
+
+    def notifyCloseRoom(self, clientPlayer, room):
+        if clientPlayer in self.rooms:
+            self.rooms.pop(clientPlayer)
+            print "Closing a room %d" % room.id
 
     def broadcastAllPlayers(self, response):
         if isinstance(response, Response):
@@ -77,6 +89,15 @@ class GameServer(object):
             msg = response
         for player in self.players.values():
             player.socket.send(msg)
+
+    def broadcastAllRoom(self, room, response, skipAuthor = None):
+        if isinstance(response, Response):
+            msg = response.toJSON()
+        else:
+            msg = response
+        for player in room.players:
+            if player != skipAuthor:
+                player.socket.send(msg)
 
 
 if __name__ == "__main__":

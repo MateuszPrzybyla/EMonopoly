@@ -129,11 +129,8 @@
     GridLayout:
         size_hint: (1, None)
         height: 40
-        cols: 3
+        cols: 2
         rows: 1
-        Button:
-            text: "Join the room"
-            on_press: root.joinRoom()
         Button:
             text: "Create a room"
             on_press: root.openCreateRoomPopup()
@@ -261,6 +258,7 @@
             Label:
                 size_hint: (None, 1)
                 id: roomPlayers
+                markup: True
                 text: "gracze"
                 color: 0, 0, 0, 1
     Button:

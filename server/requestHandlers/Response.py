@@ -5,6 +5,7 @@ from server.GameRoom import GameRoom
 
 __author__ = 'mateusz'
 
+
 class ResponseEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Response):
@@ -17,6 +18,7 @@ class ResponseEncoder(JSONEncoder):
         else:
             return JSONEncoder.default(obj)
 
+
 class Response(object):
     def __init__(self, action, success, message="", responseData=None):
         self.action = action
@@ -26,3 +28,8 @@ class Response(object):
 
     def toJSON(self):
         return json.dumps(self, cls=ResponseEncoder)
+
+
+class NotAPlayerResponse(Response):
+    def __init__(self):
+        super(NotAPlayerResponse, self).__init__("NOT_A_PLAYER", False, "Not authenticated", {})

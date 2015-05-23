@@ -8,11 +8,12 @@ class GameRoom(object):
     lastId = 0
     idLock = Lock()
 
-    def __init__(self, owner, name, playersNumber, password):
+    def __init__(self, owner, name, playersNumber, players, password):
         self.id = self.assignId()
         self.owner = owner
         self.name = name
         self.playersNumber = playersNumber
+        self.players = players
         self.password = password
 
     @synchronized(idLock)
@@ -26,5 +27,6 @@ class GameRoom(object):
             'name': self.name,
             'owner': self.owner.name,
             'private': self.password and len(self.password) > 0,
+            'players': [player.name for player in self.players],
             'playersNumber': self.playersNumber
         }

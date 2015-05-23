@@ -25,7 +25,8 @@ class CreateRoomRequestHandler(RequestHandler):
                 for room in self.gameServer.rooms.values():
                     if room.name == msg['roomName']:
                         return CreateRoomResponse(False, msg="Room with such name already exists")
-                room = GameRoom(clientPlayer, msg['roomName'], msg['playersNumber'], msg['password'])
+                room = GameRoom(clientPlayer, msg['roomName'], msg['playersNumber'], [clientPlayer], msg['password'])
+                clientPlayer.joinedRoom = room
                 self.gameServer.notifyNewRoom(clientPlayer, room)
                 return CreateRoomResponse(True, room=room)
         else:
