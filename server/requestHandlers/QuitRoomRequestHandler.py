@@ -29,8 +29,8 @@ class QuitRoomRequestHandler(RequestHandler):
                 self.gameServer.notifyCloseRoom(clientPlayer, room)
                 self.gameServer.broadcastAllRoom(room, QuitRoomResponse(True, "", clientPlayer, True))
             else:
-                room.players.remove(clientPlayer)
                 self.gameServer.broadcastAllRoom(room, QuitRoomResponse(True, "", clientPlayer, False))
+                room.players.remove(clientPlayer)
             clientPlayer.joinedRoom = None
         else:
             return NotAPlayerResponse()

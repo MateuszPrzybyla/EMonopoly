@@ -25,4 +25,3 @@ class SingleRoomScreen(EMonopolyScreen):
 
     def quitRoom(self):
         self.gameServerClient.send(QuitRoomRequest(self.roomId))
-        self.app.changeScreen('gameRoom')

@@ -6,8 +6,14 @@ __author__ = 'mateusz'
 
 
 class JoinRoomResponse(Response):
-    def __init__(self, success, msg="", room=None):
-        super(JoinRoomResponse, self).__init__("JOIN_ROOM", success, msg, room.toDict() if room is not None else {})
+    def __init__(self, success, msg="", player=None, room=None):
+        if success:
+            super(JoinRoomResponse, self).__init__("JOIN_ROOM", True, msg, {
+                'room': room.toDict(),
+                'player': player.name
+            })
+        else:
+            super(JoinRoomResponse, self).__init__("JOIN_ROOM", False, msg, {})
 
 
 class JoinRoomRequestHandler(RequestHandler):
@@ -31,6 +37,6 @@ class JoinRoomRequestHandler(RequestHandler):
                     return JoinRoomResponse(False, msg="Room not found")
                 room.players.append(clientPlayer)
                 clientPlayer.joinedRoom = room
-                return JoinRoomResponse(True, room=room)
+                self.gameServer.broadcastAllRoom(room, JoinRoomResponse(True, player=clientPlayer, room=room))
         else:
             return NotAPlayerResponse()

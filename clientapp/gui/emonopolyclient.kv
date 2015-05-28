@@ -267,9 +267,80 @@
         text: "Join"
         on_press: root.joinRoom()
 
+<CornerBox@FloatLayout>:
+    size_hint: (.1538, .1538)
+    canvas.before:
+        Color:
+            rgb: 0.2, 0.2, 0.2
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 <SingleRoomGame>:
-    Label:
-        text: "GRA!!!"
+    startBox: startBox
+    jailBox: jailBox
+    goToJailBox: goToJailBox
+    parkingBox: parkingBox
+    northPart: northPart
+    southPart: southPart
+    westPart: westPart
+    eastPart: eastPart
+    CornerBox:
+        id: startBox
+        pos_hint: {'x': .0, 'y': .0}
+    CornerBox:
+        id: jailBox
+        pos_hint: {'x': .0, 'y': .8462}
+    CornerBox:
+        id: goToJailBox
+        pos_hint: {'x': .8462, 'y': .8462}
+    CornerBox:
+        id: parkingBox
+        pos_hint: {'x': .8462, 'y': .0}
+    BoxLayout:
+        id: northPart
+        orientation: "horizontal"
+        size_hint: (.6923, .1538)
+        pos_hint: {'x': .1538, 'y': .8462}
+        canvas.before:
+            Color:
+                rgb: 0.6, 0.6, 0.6
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    BoxLayout:
+        id: southPart
+        orientation: "horizontal"
+        size_hint: (.6923, .1538)
+        pos_hint: {'x': .1538, 'y': 0}
+        canvas.before:
+            Color:
+                rgb: 0.7, 0.7, 0.7
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    BoxLayout:
+        id: westPart
+        orientation: "vertical"
+        size_hint: (.1538, .6923)
+        pos_hint: {'x': 0, 'y': .1538}
+        canvas.before:
+            Color:
+                rgb: 0.5, 0.5, 0.5
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    BoxLayout:
+        id: eastPart
+        orientation: "vertical"
+        size_hint: (.1538, .6923)
+        pos_hint: {'x': .8462, 'y': .1538}
+        canvas.before:
+            Color:
+                rgb: 0.5, 0.5, 0.5
+            Rectangle:
+                pos: self.pos
+                size: self.size
 
 <SingleRoomScreen>:
     chatController: chatContainer

@@ -5,6 +5,7 @@ from clientapp.responseHandlers.JoinRoomHandler import JoinRoomHandler
 from clientapp.responseHandlers.JoinServerResponseHandler import JoinServerResponseHandler
 from clientapp.responseHandlers.LeaveServerResponseHandler import LeaveServerResponseHandler
 from clientapp.responseHandlers.ChatMsgHandler import ChatMsgHandler
+from clientapp.responseHandlers.QuitRoomResponseHandler import QuitRoomResponseHandler
 from clientapp.responseHandlers.UnknownMessageHandler import UnknownMessageHandler
 
 __author__ = 'mateusz'
@@ -19,7 +20,7 @@ class ServerMessageDispatcher(object):
             'CREATE_ROOM': CreateRoomHandler(),
             'GET_ROOMS': GetRoomsResponseHandler(),
             'JOIN_ROOM': JoinRoomHandler(),
-            'QUIT_ROOM': UnknownMessageHandler()
+            'QUIT_ROOM': QuitRoomResponseHandler()
         }
         self.defaultHandler = UnknownMessageHandler()
 

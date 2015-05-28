@@ -25,8 +25,9 @@ class ChatController(BoxLayout):
     def clearSendMsg(self):
         self.ids['chatMsg'].text = ''
 
-    def appendMessage(self, msg, author, timestamp):
-        self.msgList.add_widget(ChatMessage(text='[b]%s:[/b] %s' % (author, msg)))
+    def appendMessage(self, msg, author, timestamp, infoMessage=False):
+        format = '[i][b]%s%s[/b] %s[/i]' if infoMessage else '[b]%s%s[/b] %s'
+        self.msgList.add_widget(ChatMessage(text=format % (author, ':' if author else '', msg)))
         print "Message from %s, content %s, timestamp %s" % (author, msg, "")
 
     def sendChatMsg(self, msgType, msg):

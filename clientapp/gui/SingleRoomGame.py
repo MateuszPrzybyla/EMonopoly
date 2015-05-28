@@ -1,6 +1,6 @@
-from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 
 __author__ = 'mateusz'
 
-class SingleRoomGame(BoxLayout):
+class SingleRoomGame(FloatLayout):
     pass

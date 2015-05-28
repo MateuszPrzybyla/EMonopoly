@@ -33,5 +33,6 @@ class GameRoomController(BoxLayout):
         self.gameServerClient.send(GetRoomsRequest())
 
     def populateRooms(self, rooms):
+        self.roomsArea.clear_widgets()
         for room in rooms:
             self.roomsArea.add_widget(RoomListElement(room['id'], room['owner'], room['playersNumber'], room['players'], self))

@@ -71,13 +71,16 @@ class GameServer(object):
         if clientPlayer in self.rooms:
             self.rooms.pop(clientPlayer)
         self.players.pop(clientPlayer.name)
-        clientPlayer.joinedRoom.players.remove(clientPlayer)
+        if clientPlayer.joinedRoom:
+            clientPlayer.joinedRoom.players.remove(clientPlayer)
 
     def notifyNewRoom(self, clientPlayer, room):
         self.rooms[clientPlayer] = room
         print "Player %s created a room: %s (id: %d)" % (clientPlayer.name, room.name, room.id)
 
     def notifyCloseRoom(self, clientPlayer, room):
+        for player in room.players:
+            player.joinedRoom = None
         if clientPlayer in self.rooms:
             self.rooms.pop(clientPlayer)
             print "Closing a room %d" % room.id
