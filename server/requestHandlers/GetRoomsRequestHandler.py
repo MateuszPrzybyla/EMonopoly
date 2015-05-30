@@ -17,5 +17,5 @@ class GetRoomsRequestHandler(RequestHandler):
         super(GetRoomsRequestHandler, self).__init__()
         self.gameServer = gameServer
 
-    def handle(self, msg, rawMsg, clientSocket, clientPlayer):
+    def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         return GetRoomsResponse(self.gameServer.rooms.values())

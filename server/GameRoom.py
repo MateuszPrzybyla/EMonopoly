@@ -1,4 +1,5 @@
 from threading import Lock
+from server.MonopolyGame import MonopolyGame
 from utils.decorators import synchronized
 
 __author__ = 'mateusz'
@@ -15,6 +16,7 @@ class GameRoom(object):
         self.playersNumber = playersNumber
         self.players = players
         self.password = password
+        self.game = MonopolyGame(int(playersNumber), players)
 
     @synchronized(idLock)
     def assignId(self):

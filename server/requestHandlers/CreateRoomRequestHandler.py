@@ -15,7 +15,7 @@ class CreateRoomRequestHandler(RequestHandler):
         self.gameServer = gameServer
         self.createRoomLock = Lock()
 
-    def handle(self, msg, rawMsg, clientSocket, clientPlayer):
+    def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if clientPlayer:
             if not msg['roomName']:
                 return CreateRoomResponse(False, msg="Room name cannot be empty")

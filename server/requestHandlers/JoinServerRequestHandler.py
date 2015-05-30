@@ -17,7 +17,7 @@ class JoinServerRequestHandler(RequestHandler):
         self.gameServer = gameServer
         self.newPlayerLock = Lock()
 
-    def handle(self, msg, rawMsg, clientSocket, clientPlayer):
+    def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if clientPlayer:
             return JoinServerResponse(False, "Already joined as a %s" % clientPlayer.name, msg['nick'])
         if len(msg['nick']) < 2:

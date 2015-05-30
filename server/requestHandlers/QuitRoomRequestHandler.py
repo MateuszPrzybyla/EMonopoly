@@ -20,7 +20,7 @@ class QuitRoomRequestHandler(RequestHandler):
         super(QuitRoomRequestHandler, self).__init__()
         self.gameServer = gameServer
 
-    def handle(self, msg, rawMsg, clientSocket, clientPlayer):
+    def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if clientPlayer:
             room = clientPlayer.joinedRoom
             if not room:

@@ -22,14 +22,14 @@ class JoinRoomRequestHandler(RequestHandler):
         self.gameServer = gameServer
         self.joinRoomLock = Lock()
 
-    def handle(self, msg, rawMsg, clientSocket, clientPlayer):
+    def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if clientPlayer:
             if not msg['roomId']:
                 return JoinRoomResponse(False, msg="roomId cannot be empty")
             with self.joinRoomLock:
-                if clientPlayer.joinedRoom:
-                    if clientPlayer.joinedRoom.id != msg['roomId']:
-                        return JoinRoomResponse(False, msg="You already joined room %d" % clientPlayer.joinedRoom.id)
+                if joinedRoom:
+                    if joinedRoom.id != msg['roomId']:
+                        return JoinRoomResponse(False, msg="You already joined room %d" % joinedRoom.id)
                     else:
                         return JoinRoomResponse(False, msg="You already are in this room")
                 room = self.gameServer.getRoom(msg['roomId'])

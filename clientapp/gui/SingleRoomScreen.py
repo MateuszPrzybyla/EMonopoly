@@ -8,6 +8,7 @@ __author__ = 'mateusz'
 class SingleRoomScreen(EMonopolyScreen):
     roomName = ObjectProperty()
     chatController = ObjectProperty()
+    singleRoomGameWidget = ObjectProperty()
 
     def __init__(self, **kwargs):
         super(SingleRoomScreen, self).__init__(**kwargs)
@@ -18,10 +19,11 @@ class SingleRoomScreen(EMonopolyScreen):
 
     def on_leave(self, *args):
         self.chatController.clear()
+        self.singleRoomGameWidget.restoreInitialView()
 
     def load(self, args):
         self.roomId = args['id']
         self.roomName.text = "#%d %s" % (args['id'], args['name'])
 
     def quitRoom(self):
-        self.gameServerClient.send(QuitRoomRequest(self.roomId))
+        self.gameServerClient.send(QuitRoomRequest())

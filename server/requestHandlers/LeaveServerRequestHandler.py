@@ -12,7 +12,7 @@ class LeaveServerRequestHandler(RequestHandler):
         super(LeaveServerRequestHandler, self).__init__()
         self.gameServer = gameServer
 
-    def handle(self, msg, rawMsg, clientSocket, clientPlayer):
+    def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if clientPlayer:
             return LeaveServerResponse(self.gameServer.notifyPlayerLeaveServer(clientSocket), "")
         else:

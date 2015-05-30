@@ -1,5 +1,6 @@
 import json
 from server.requestHandlers.CreateRoomRequestHandler import CreateRoomRequestHandler
+from server.requestHandlers.GameStartRequestHandler import GameStartRequestHandler
 from server.requestHandlers.GetRoomsRequestHandler import GetRoomsRequestHandler
 from server.requestHandlers.JoinRoomRequestHandler import JoinRoomRequestHandler
 
@@ -23,7 +24,8 @@ class RequestHandlerDispatcher(object):
             'CREATE_ROOM': CreateRoomRequestHandler(self.gameServer),
             'GET_ROOMS': GetRoomsRequestHandler(self.gameServer),
             'JOIN_ROOM': JoinRoomRequestHandler(self.gameServer),
-            'QUIT_ROOM': QuitRoomRequestHandler(self.gameServer)
+            'QUIT_ROOM': QuitRoomRequestHandler(self.gameServer),
+            'GAME_START': GameStartRequestHandler(self.gameServer)
         }
         self.defaultHandler = UnknownRequestHandler()
 

@@ -21,7 +21,7 @@ class ChatRequestHandler(RequestHandler):
         super(ChatRequestHandler, self).__init__()
         self.gameServer = gameServer
 
-    def handle(self, message, rawMsg, clientSocket, clientPlayer):
+    def handle(self, message, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if not message['msg'] or not message['msg'].strip() or not clientPlayer:
             return
         if 'type' not in message:

@@ -16,8 +16,13 @@ Factory.register('ChatMessage', module='clientapp.gui.ChatController')
 Factory.register('GameRoomController', module='clientapp.gui.GameRoomController')
 Factory.register('CreateRoomPopup', module='clientapp.gui.CreateRoomPopup')
 Factory.register('RoomListElement', module='clientapp.gui.RoomListElement')
-Factory.register('SingleRoomGame', module='clientapp.gui.SingleRoomGame')
+Factory.register('GameBoard', module='clientapp.gui.GameBoard')
+Factory.register('SingleRoomGameWidget', module='clientapp.gui.SingleRoomGameWidget')
 
+from kivy.config import Config
+Config.set('graphics', 'width', '1000')
+Config.set('graphics', 'height', '700')
+Config.set('graphics', 'resizable', '0')
 
 class EMonopolyClientApp(App):
     def __init__(self, **kwargs):

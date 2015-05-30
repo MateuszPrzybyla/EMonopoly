@@ -13,5 +13,5 @@ class UnknownMessageResponse(Response):
 
 
 class UnknownRequestHandler(RequestHandler):
-    def handle(self, msg, rawMsg, clientSocket, clientPlayer):
+    def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         return UnknownMessageResponse(rawMsg)

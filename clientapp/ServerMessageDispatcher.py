@@ -1,5 +1,6 @@
 import json
 from clientapp.responseHandlers.CreateRoomHandler import CreateRoomHandler
+from clientapp.responseHandlers.GameStartResponseHandler import GameStartResponseHandler
 from clientapp.responseHandlers.GetRoomsResponseHandler import GetRoomsResponseHandler
 from clientapp.responseHandlers.JoinRoomHandler import JoinRoomHandler
 from clientapp.responseHandlers.JoinServerResponseHandler import JoinServerResponseHandler
@@ -20,7 +21,8 @@ class ServerMessageDispatcher(object):
             'CREATE_ROOM': CreateRoomHandler(),
             'GET_ROOMS': GetRoomsResponseHandler(),
             'JOIN_ROOM': JoinRoomHandler(),
-            'QUIT_ROOM': QuitRoomResponseHandler()
+            'QUIT_ROOM': QuitRoomResponseHandler(),
+            'GAME_START': GameStartResponseHandler()
         }
         self.defaultHandler = UnknownMessageHandler()
 

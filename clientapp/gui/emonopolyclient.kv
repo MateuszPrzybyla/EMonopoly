@@ -276,7 +276,35 @@
             pos: self.pos
             size: self.size
 
-<SingleRoomGame>:
+<SingleRoomGameWidget>:
+    anchor_x: 'center'
+    anchor_y: 'center'
+    minimum_height: 650
+    minimum_width: 650
+    startMsgLabel: startMsgLabel
+    initialView: initialView
+    BoxLayout:
+        id: initialView
+        orientation: "vertical"
+        size_hint: (None, None)
+        pos_hint: { 'center_x' : 0.5 }
+        width: 400
+        spacing: 10
+        Button:
+            size_hint: (1, None)
+            height: 30
+            text: "Start"
+            on_press: root.startGame()
+        Label:
+            id: startMsgLabel
+            text: ""
+            height: 25
+            size_hint: (1, None)
+            color: 1, 0, 0, 1
+
+<GameBoard>:
+    size_hint: (None, None)
+    size: (650, 650)
     startBox: startBox
     jailBox: jailBox
     goToJailBox: goToJailBox
@@ -324,9 +352,10 @@
         orientation: "vertical"
         size_hint: (.1538, .6923)
         pos_hint: {'x': 0, 'y': .1538}
+        spacing: 1
         canvas.before:
             Color:
-                rgb: 0.5, 0.5, 0.5
+                rgb: 0, 0, 0
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -342,9 +371,41 @@
                 pos: self.pos
                 size: self.size
 
+<HorizontalCityField>
+    orientation: "horizontal"
+    cityName: cityName
+    value: value
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgb: 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Label:
+            id: cityName
+            color: 0, 0, 0, 1
+        Label:
+            id: value
+            color: 0, 0, 0, 1
+    GridLayout:
+        id: colorArea
+        rows: 5
+        cols: 1
+        size_hint: (None, 1)
+        width: 10
+        row_default_height: 20
+        canvas.before:
+            Color:
+                rgb: 1, 0, 0
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
 <SingleRoomScreen>:
     chatController: chatContainer
-    singleRoomGame: singleRoomGame
+    singleRoomGameWidget: singleRoomGameWidget
     roomName: roomName
     BoxLayout:
         orientation: "vertical"
@@ -364,8 +425,8 @@
                 on_press: root.quitRoom()
         BoxLayout:
             orientation: "horizontal"
-            SingleRoomGame:
-                id: singleRoomGame
+            SingleRoomGameWidget:
+                id: singleRoomGameWidget
             ChatController:
                 id: chatContainer
                 msgType: "ROOM"
