@@ -5,12 +5,13 @@ __author__ = 'mateusz'
 
 
 class GameStartResponse(Response):
-    def __init__(self, success, msg="", playersLeft=0, gameStarted=False, player=None):
+    def __init__(self, success, msg="", playersLeft=0, gameStarted=False, player=None, gameData=None):
         if success:
             super(GameStartResponse, self).__init__("GAME_START", True, msg, {
                 'gameStarted': gameStarted,
                 'playersLeft': playersLeft,
-                'player': player.name
+                'player': player.name,
+                'gameData': gameData.toDict()
             })
         else:
             super(GameStartResponse, self).__init__("GAME_START", False, msg)
@@ -29,8 +30,9 @@ class GameStartRequestHandler(RequestHandler):
                 if result:
                     if monopolyGame.isReadyToStart():
                         monopolyGame.startGame()
-                        self.gameServer.broadcastAllRoom(
-                            joinedRoom, GameStartResponse(True, "Game has started!", gameStarted=True, player=clientPlayer))
+                        self.gameServer.broadcastAllRoom(joinedRoom,
+                                                         GameStartResponse(True, "Game has started!", gameStarted=True,
+                                                                           player=clientPlayer, gameData=monopolyGame))
                     else:
                         self.gameServer.broadcastAllRoom(
                             joinedRoom, GameStartResponse(True, playersLeft=playersLeft, player=clientPlayer))

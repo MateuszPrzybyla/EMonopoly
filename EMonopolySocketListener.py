@@ -1,10 +1,7 @@
 from threading import Thread
+from utils.socket import read, send, ClientDisconnectedException
 
 __author__ = 'mateusz'
-
-
-class ClientDisconnectedException(Exception):
-    pass
 
 
 class EMonopolySocketListener(Thread):
@@ -28,7 +25,7 @@ class EMonopolySocketListener(Thread):
 
     def receive(self):
         try:
-            msg = self.socket.recv(2048)
+            msg = read(self.socket)
         except Exception as e:
             self.handleReceiveError(e)
         else:
@@ -38,9 +35,8 @@ class EMonopolySocketListener(Thread):
                 raise exception
             return msg.strip()
 
-
     def send(self, msg):
-        self.socket.send(msg)
+        send(self.socket, msg)
 
     def handle(self, msg):
         raise NotImplementedError("handle method must be implemented by SocketListener subclass")

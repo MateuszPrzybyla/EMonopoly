@@ -16,7 +16,7 @@ class GameRoom(object):
         self.playersNumber = playersNumber
         self.players = players
         self.password = password
-        self.game = MonopolyGame(int(playersNumber), players)
+        self.game = MonopolyGame(self.id, int(playersNumber), players)
 
     @synchronized(idLock)
     def assignId(self):

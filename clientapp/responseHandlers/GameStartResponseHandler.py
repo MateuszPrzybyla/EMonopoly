@@ -1,5 +1,7 @@
 from kivy.app import App
-from clientapp.gui.GameBoard import GameBoard
+
+from clientapp.gui.board.GameBoard import GameBoard
+
 
 __author__ = 'mateusz'
 
@@ -17,7 +19,7 @@ class GameStartResponseHandler(object):
             if msg['responseData']['gameStarted']:
                 self.gameWidget.clear_widgets()
                 boardWidget = GameBoard()
-                boardWidget.initialize()
+                boardWidget.initialize(msg['responseData']['gameData'])
                 self.gameWidget.add_widget(boardWidget)
                 self.chatController.appendMessage('Game is on!', '', '', infoMessage=True)
             else:

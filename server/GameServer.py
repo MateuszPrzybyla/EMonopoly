@@ -3,6 +3,7 @@ import socket
 from server.ClientPlayer import ClientPlayer
 from server.GameClient import GameClient
 from server.requestHandlers.Response import Response
+from utils.socket import send
 
 
 __author__ = 'mateusz'
@@ -91,7 +92,7 @@ class GameServer(object):
         else:
             msg = response
         for player in self.players.values():
-            player.socket.send(msg)
+            send(player.socket, msg)
 
     def broadcastAllRoom(self, room, response, skipAuthor = None):
         if isinstance(response, Response):
@@ -100,11 +101,11 @@ class GameServer(object):
             msg = response
         for player in room.players:
             if player != skipAuthor:
-                player.socket.send(msg)
+                send(player.socket, msg)
 
 
 if __name__ == "__main__":
-    ports = [1234, 1235]
+    ports = [1234, 1235, 1236]
     for port in ports:
         try:
             print "Trying start on port %d" % port

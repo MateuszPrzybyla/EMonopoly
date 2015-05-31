@@ -1,7 +1,9 @@
 import socket
+import struct
 from clientapp.ServerMessageListener import ServerMessageListener
 
 from clientapp.requests.Request import Request
+from utils.socket import send
 
 
 __author__ = 'mateusz'
@@ -23,11 +25,7 @@ class GameServerClient(object):
     def close(self):
         self.serverSocket.close()
 
-    def sendRaw(self, rawMsg):
-        self.serverSocket.send(rawMsg)
-
     def send(self, msg):
         if isinstance(msg, Request):
-            self.serverSocket.send(msg.toJSON())
-        else:
-            self.sendRaw(msg)
+            jsonMsg = msg.toJSON()
+            send(self.serverSocket, jsonMsg)

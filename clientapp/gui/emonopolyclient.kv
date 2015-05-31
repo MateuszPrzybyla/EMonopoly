@@ -168,7 +168,7 @@
                 Spinner:
                     id: playersNumber
                     text: "2"
-                    values: ("2", "3", "4", "5", "6")
+                    values: ("1", "2", "3", "4", "5", "6")
                     pos_hint: {'center_x': .5, 'y': 0.3}
                     size_hint: (0.8, None)
                     height: 40
@@ -302,6 +302,15 @@
             size_hint: (1, None)
             color: 1, 0, 0, 1
 
+<FieldRow@BoxLayout>:
+    spacing: 1
+    canvas.before:
+        Color:
+            rgb: 0, 0, 0
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 <GameBoard>:
     size_hint: (None, None)
     size: (650, 650)
@@ -325,83 +334,149 @@
     CornerBox:
         id: parkingBox
         pos_hint: {'x': .8462, 'y': .0}
-    BoxLayout:
+    FieldRow:
         id: northPart
         orientation: "horizontal"
         size_hint: (.6923, .1538)
         pos_hint: {'x': .1538, 'y': .8462}
-        canvas.before:
-            Color:
-                rgb: 0.6, 0.6, 0.6
-            Rectangle:
-                pos: self.pos
-                size: self.size
-    BoxLayout:
+    FieldRow:
         id: southPart
         orientation: "horizontal"
         size_hint: (.6923, .1538)
         pos_hint: {'x': .1538, 'y': 0}
-        canvas.before:
-            Color:
-                rgb: 0.7, 0.7, 0.7
-            Rectangle:
-                pos: self.pos
-                size: self.size
-    BoxLayout:
+    FieldRow:
         id: westPart
         orientation: "vertical"
         size_hint: (.1538, .6923)
         pos_hint: {'x': 0, 'y': .1538}
-        spacing: 1
-        canvas.before:
-            Color:
-                rgb: 0, 0, 0
-            Rectangle:
-                pos: self.pos
-                size: self.size
-    BoxLayout:
+    FieldRow:
         id: eastPart
         orientation: "vertical"
         size_hint: (.1538, .6923)
         pos_hint: {'x': .8462, 'y': .1538}
-        canvas.before:
-            Color:
-                rgb: 0.5, 0.5, 0.5
-            Rectangle:
-                pos: self.pos
-                size: self.size
 
-<HorizontalCityField>
+<CityNameLabel@Label>:
+    color: 0, 0, 0, 1
+
+<FieldValueLabel@Label>:
+    color: 0, 0, 0, 1
+
+<FieldContent@BoxLayout>
+    canvas.before:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<HorizontalFieldBuildingArea>:
+    rows: 5
+    cols: 1
+    size_hint: (None, 1)
+    width: 15
+    row_default_height: 10
+    canvas.before:
+        Color:
+            rgb: self.fieldColor
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<VerticalFieldBuildingArea>:
+    rows: 1
+    cols: 5
+    size_hint: (1, None)
+    height: 15
+    row_default_width: 10
+    canvas.before:
+        Color:
+            rgb: self.fieldColor
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<WestCityField>:
     orientation: "horizontal"
     cityName: cityName
     value: value
-    BoxLayout:
+    buildingArea: buildingArea
+    FieldContent:
         orientation: "vertical"
-        canvas.before:
-            Color:
-                rgb: 1, 1, 1
-            Rectangle:
-                pos: self.pos
-                size: self.size
-        Label:
+        CityNameLabel:
             id: cityName
-            color: 0, 0, 0, 1
-        Label:
+        FieldValueLabel:
             id: value
-            color: 0, 0, 0, 1
-    GridLayout:
-        id: colorArea
-        rows: 5
-        cols: 1
-        size_hint: (None, 1)
-        width: 10
-        row_default_height: 20
-        canvas.before:
-            Color:
-                rgb: 1, 0, 0
-            Rectangle:
-                pos: self.pos
-                size: self.size
+    HorizontalFieldBuildingArea:
+        id: buildingArea
+
+<NorthCityField>:
+    orientation: "vertical"
+    cityName: cityName
+    value: value
+    buildingArea: buildingArea
+    FieldContent:
+        orientation: "vertical"
+        CityNameLabel:
+            id: cityName
+        FieldValueLabel:
+            id: value
+    VerticalFieldBuildingArea:
+        id: buildingArea
+
+<EastCityField>:
+    orientation: "horizontal"
+    cityName: cityName
+    value: value
+    buildingArea: buildingArea
+    HorizontalFieldBuildingArea:
+        id: buildingArea
+    FieldContent:
+        orientation: "vertical"
+        CityNameLabel:
+            id: cityName
+        FieldValueLabel:
+            id: value
+
+<SouthCityField>:
+    orientation: "vertical"
+    cityName: cityName
+    value: value
+    buildingArea: buildingArea
+    VerticalFieldBuildingArea:
+        id: buildingArea
+    FieldContent:
+        orientation: "vertical"
+        CityNameLabel:
+            id: cityName
+        FieldValueLabel:
+            id: value
+
+<SpecialField>:
+    namesWrapper: namesWrapper
+    nameFirstRow: nameFirstRow
+    nameSecondRow: nameSecondRow
+    value: value
+    FieldContent:
+        orientation: "vertical"
+        BoxLayout:
+            size_hint: (1, 0.6)
+            id: namesWrapper
+            orientation: "vertical"
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameFirstRow
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameSecondRow
+        FieldValueLabel:
+            size_hint: (1, 0.4)
+            id: value
+
+<SpecialHorizontalField@SpecialField>:
+    orientation: "horizontal"
+
+<SpecialVerticalField@SpecialField>:
+    orientation: "horizontal"
 
 <SingleRoomScreen>:
     chatController: chatContainer
