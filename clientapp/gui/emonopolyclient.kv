@@ -267,14 +267,13 @@
         text: "Join"
         on_press: root.joinRoom()
 
-<CornerBox@FloatLayout>:
+<CornerBox>:
+    orientation: "horizontal"
     size_hint: (.1538, .1538)
-    canvas.before:
-        Color:
-            rgb: 0.2, 0.2, 0.2
-        Rectangle:
-            pos: self.pos
-            size: self.size
+    size: image.size
+    AsyncImage:
+        id: image
+        source: root.imageSrc
 
 <SingleRoomGameWidget>:
     anchor_x: 'center'
@@ -329,10 +328,10 @@
         id: jailBox
         pos_hint: {'x': .0, 'y': .8462}
     CornerBox:
-        id: goToJailBox
+        id: parkingBox
         pos_hint: {'x': .8462, 'y': .8462}
     CornerBox:
-        id: parkingBox
+        id: goToJailBox
         pos_hint: {'x': .8462, 'y': .0}
     FieldRow:
         id: northPart
@@ -354,17 +353,36 @@
         orientation: "vertical"
         size_hint: (.1538, .6923)
         pos_hint: {'x': .8462, 'y': .1538}
+    BoardMenu:
+        id: boardMenu
+        size_hint: (.6923, .6923)
+        pos_hint: {'x': .1538, 'y': .1538}
+        BoxLayout:
+            size_hint: (.33333, .33333)
+            pos_hint: {'x': 0, 'y': .66667}
+            Label:
+                text: "Dice Area"
+        BoxLayout:
+            size_hint: (.33333, .66667)
+            pos_hint: {'x': 0, 'y': 0}
+            Label:
+                text: "Field details"
+        BoxLayout:
+            size_hint: (.66667, 1)
+            pos_hint: {'x': .3333, 'y': 0}
+            Label:
+                text: "Game menu"
 
 <CityNameLabel@Label>:
-    color: 0, 0, 0, 1
+    color: self.ownerColor
 
 <FieldValueLabel@Label>:
-    color: 0, 0, 0, 1
+    color: self.ownerColor
 
 <FieldContent@BoxLayout>
     canvas.before:
         Color:
-            rgb: 1, 1, 1
+            rgb: .8392, .9412, .8392
         Rectangle:
             pos: self.pos
             size: self.size

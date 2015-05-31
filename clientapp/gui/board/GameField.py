@@ -1,5 +1,6 @@
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex
 
 __author__ = 'mateusz'
@@ -9,20 +10,42 @@ def calculateFontSize(text, width):
     return int(width * 0.75 / len(text))
 
 
+def parseColor(color):
+    return get_color_from_hex(color)
+
+class CityNameLabel(Label):
+    ownerColor = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super(CityNameLabel, self).__init__(**kwargs)
+        self.ownerColor = (0, 0, 0, 1)
+
+
+class FieldValueLabel(Label):
+    ownerColor = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super(FieldValueLabel, self).__init__(**kwargs)
+        self.ownerColor = (0, 0, 0, 1)
+
+
 class CityField(BoxLayout):
     cityName = ObjectProperty()
     value = ObjectProperty()
     buildingArea = ObjectProperty()
+    ownerColor = ObjectProperty()
 
     def __init__(self, cityName, value, color):
         super(CityField, self).__init__()
         self.cityName.text = cityName
         self.cityName.font_size = str(calculateFontSize(cityName, self.width)) + 'sp'
         self.value.text = str(value) + " $"
-        self.buildingArea.fieldColor = self.parseColor(color)
+        self.buildingArea.fieldColor = parseColor(color)
+        self.ownerColor = (0, 0, 0)
 
-    def parseColor(self, color):
-        return get_color_from_hex(color)
+    def markBoughtByPlayer(self, hexColor):
+        self.cityName.ownerColor = parseColor(hexColor)
+        self.value.ownerColor = parseColor(hexColor)
 
 
 class WestCityField(CityField):
@@ -62,6 +85,11 @@ class SpecialField(BoxLayout):
         if value:
             self.value.text = str(value) + " $"
 
+    def markBoughtByPlayer(self, hexColor):
+        for label in self.namesWrapper.children:
+            label.ownerColor = parseColor(hexColor)
+        self.value.ownerColor = parseColor(hexColor)
+
 
 class SpecialHorizontalField(SpecialField):
     pass
@@ -69,3 +97,6 @@ class SpecialHorizontalField(SpecialField):
 
 class SpecialVerticalField(SpecialField):
     pass
+
+class CornerBox(BoxLayout):
+    imageSrc = StringProperty(None)

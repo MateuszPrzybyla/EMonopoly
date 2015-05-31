@@ -20,6 +20,7 @@ Factory.register('GameBoard', module='clientapp.gui.board.GameBoard')
 Factory.register('SingleRoomGameWidget', module='clientapp.gui.SingleRoomGameWidget')
 Factory.register('HorizontalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
 Factory.register('VerticalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
+Factory.register('BoardMenu', module='clientapp.gui.board.BoardMenu')
 
 from kivy.config import Config
 Config.set('graphics', 'width', '1000')
@@ -30,7 +31,7 @@ class EMonopolyClientApp(App):
     def __init__(self, **kwargs):
         super(EMonopolyClientApp, self).__init__(**kwargs)
         self.data = dict()
-        self.gameServerClient = GameServerClient('matdeb', 1235, self)
+        self.gameServerClient = GameServerClient('matdeb', 1234, self)
 
     def on_stop(self):
         self.gameServerClient.close()

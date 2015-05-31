@@ -11,7 +11,7 @@ class GameStartResponse(Response):
                 'gameStarted': gameStarted,
                 'playersLeft': playersLeft,
                 'player': player.name,
-                'gameData': gameData.toDict()
+                'gameData': gameData.toDict() if gameData else None
             })
         else:
             super(GameStartResponse, self).__init__("GAME_START", False, msg)
