@@ -357,11 +357,9 @@
         id: boardMenu
         size_hint: (.6923, .6923)
         pos_hint: {'x': .1538, 'y': .1538}
-        BoxLayout:
+        DiceArea:
             size_hint: (.33333, .33333)
             pos_hint: {'x': 0, 'y': .66667}
-            Label:
-                text: "Dice Area"
         BoxLayout:
             size_hint: (.33333, .66667)
             pos_hint: {'x': 0, 'y': 0}
@@ -372,6 +370,38 @@
             pos_hint: {'x': .3333, 'y': 0}
             Label:
                 text: "Game menu"
+
+<DiceArea>:
+    orientation: "vertical"
+    diceOwner: diceOwner
+    diceOne: diceOne
+    diceTwo: diceTwo
+    Label:
+        id: diceOwner
+        text: "LisuBB rolls..."
+    BoxLayout:
+        orientation: "horizontal"
+        Label:
+            id: diceOne
+            text: "5"
+            font_size: '30sp'
+        Label:
+            id: diceTwo
+            text: "3"
+            font_size: '30sp'
+
+<CityFieldDetails>:
+    orientation: "vertical"
+    Label:
+        id: cityName
+        text: "London"
+    GridLayout:
+        rows: 5
+        cols: 5
+        Label:
+            text: "Rent"
+        Label:
+            text: "4 $"
 
 <CityNameLabel@Label>:
     color: self.ownerColor
@@ -413,11 +443,42 @@
             pos: self.pos
             size: self.size
 
+<PlayerMarker@BoxLayout>:
+    canvas.before:
+        Color:
+            rgb: self.markerColor
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<HorizontalPlayerMarkerArea@FloatLayout>:
+    size_hint: (None, 1)
+    width: 15
+    canvas.before:
+        Color:
+            rgb: .8392, .9412, .8392
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<VerticalPlayerMarkerArea@FloatLayout>:
+    size_hint: (1, None)
+    height: 15
+    canvas.before:
+        Color:
+            rgb: .8392, .9412, .8392
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 <WestCityField>:
     orientation: "horizontal"
     cityName: cityName
     value: value
+    playerMarkerArea: playerMarkerArea
     buildingArea: buildingArea
+    HorizontalPlayerMarkerArea:
+        id: playerMarkerArea
     FieldContent:
         orientation: "vertical"
         CityNameLabel:
@@ -431,7 +492,10 @@
     orientation: "vertical"
     cityName: cityName
     value: value
+    playerMarkerArea: playerMarkerArea
     buildingArea: buildingArea
+    VerticalPlayerMarkerArea:
+        id: playerMarkerArea
     FieldContent:
         orientation: "vertical"
         CityNameLabel:
@@ -446,6 +510,7 @@
     cityName: cityName
     value: value
     buildingArea: buildingArea
+    playerMarkerArea: playerMarkerArea
     HorizontalFieldBuildingArea:
         id: buildingArea
     FieldContent:
@@ -454,11 +519,14 @@
             id: cityName
         FieldValueLabel:
             id: value
+    HorizontalPlayerMarkerArea:
+        id: playerMarkerArea
 
 <SouthCityField>:
     orientation: "vertical"
     cityName: cityName
     value: value
+    playerMarkerArea: playerMarkerArea
     buildingArea: buildingArea
     VerticalFieldBuildingArea:
         id: buildingArea
@@ -468,12 +536,18 @@
             id: cityName
         FieldValueLabel:
             id: value
+    VerticalPlayerMarkerArea:
+        id: playerMarkerArea
 
-<SpecialField>:
+<SpecialWestField>:
+    orientation: "horizontal"
     namesWrapper: namesWrapper
     nameFirstRow: nameFirstRow
     nameSecondRow: nameSecondRow
     value: value
+    playerMarkerArea: playerMarkerArea
+    HorizontalPlayerMarkerArea:
+        id: playerMarkerArea
     FieldContent:
         orientation: "vertical"
         BoxLayout:
@@ -490,11 +564,80 @@
             size_hint: (1, 0.4)
             id: value
 
-<SpecialHorizontalField@SpecialField>:
-    orientation: "horizontal"
+<SpecialNorthField>:
+    orientation: "vertical"
+    namesWrapper: namesWrapper
+    nameFirstRow: nameFirstRow
+    nameSecondRow: nameSecondRow
+    value: value
+    playerMarkerArea: playerMarkerArea
+    VerticalPlayerMarkerArea:
+        id: playerMarkerArea
+    FieldContent:
+        orientation: "vertical"
+        BoxLayout:
+            size_hint: (1, 0.6)
+            id: namesWrapper
+            orientation: "vertical"
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameFirstRow
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameSecondRow
+        FieldValueLabel:
+            size_hint: (1, 0.4)
+            id: value
 
-<SpecialVerticalField@SpecialField>:
+<SpecialEastField>:
     orientation: "horizontal"
+    namesWrapper: namesWrapper
+    nameFirstRow: nameFirstRow
+    nameSecondRow: nameSecondRow
+    value: value
+    playerMarkerArea: playerMarkerArea
+    FieldContent:
+        orientation: "vertical"
+        BoxLayout:
+            size_hint: (1, 0.6)
+            id: namesWrapper
+            orientation: "vertical"
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameFirstRow
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameSecondRow
+        FieldValueLabel:
+            size_hint: (1, 0.4)
+            id: value
+    HorizontalPlayerMarkerArea:
+        id: playerMarkerArea
+
+<SpecialSouthField>:
+    orientation: "vertical"
+    namesWrapper: namesWrapper
+    nameFirstRow: nameFirstRow
+    nameSecondRow: nameSecondRow
+    value: value
+    playerMarkerArea: playerMarkerArea
+    FieldContent:
+        orientation: "vertical"
+        BoxLayout:
+            size_hint: (1, 0.6)
+            id: namesWrapper
+            orientation: "vertical"
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameFirstRow
+            CityNameLabel:
+                size_hint: (1, 0.5)
+                id: nameSecondRow
+        FieldValueLabel:
+            size_hint: (1, 0.4)
+            id: value
+    VerticalPlayerMarkerArea:
+        id: playerMarkerArea
 
 <SingleRoomScreen>:
     chatController: chatContainer

@@ -21,6 +21,7 @@ Factory.register('SingleRoomGameWidget', module='clientapp.gui.SingleRoomGameWid
 Factory.register('HorizontalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
 Factory.register('VerticalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
 Factory.register('BoardMenu', module='clientapp.gui.board.BoardMenu')
+Factory.register('PlayerMarker', module='clientapp.gui.board.GameField')
 
 from kivy.config import Config
 Config.set('graphics', 'width', '1000')
