@@ -7,14 +7,14 @@ __author__ = 'mateusz'
 class GameStartResponse(Response):
     def __init__(self, success, msg="", playersLeft=0, gameStarted=False, player=None, gameData=None):
         if success:
-            super(GameStartResponse, self).__init__("GAME_START", True, msg, {
+            super(GameStartResponse, self).__init__("START_GAME", True, msg, {
                 'gameStarted': gameStarted,
                 'playersLeft': playersLeft,
                 'player': player.name,
                 'gameData': gameData.toDict() if gameData else None
             })
         else:
-            super(GameStartResponse, self).__init__("GAME_START", False, msg)
+            super(GameStartResponse, self).__init__("START_GAME", False, msg)
 
 
 class GameStartRequestHandler(RequestHandler):

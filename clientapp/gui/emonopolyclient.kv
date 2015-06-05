@@ -268,12 +268,14 @@
         on_press: root.joinRoom()
 
 <CornerBox>:
-    orientation: "horizontal"
+    orientation: "vertical"
+    padding: 5
     size_hint: (.1538, .1538)
-    size: image.size
-    AsyncImage:
-        id: image
-        source: root.imageSrc
+    canvas.before:
+        Rectangle:
+            source: root.imageSrc
+            pos: self.pos
+            size: self.size
 
 <SingleRoomGameWidget>:
     anchor_x: 'center'
@@ -301,7 +303,23 @@
             size_hint: (1, None)
             color: 1, 0, 0, 1
 
+
+<HorizontalPlayerMarkerArea@FloatLayout>:
+    size_hint: (None, 1)
+    width: 15
+    canvas.before:
+        Color:
+            rgb: .8392, .9412, .8392
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<VerticalPlayerMarkerArea@FloatLayout>:
+    size_hint: (1, None)
+    height: 15
+
 <FieldRow@BoxLayout>:
+    padding: 1
     spacing: 1
     canvas.before:
         Color:
@@ -321,18 +339,51 @@
     southPart: southPart
     westPart: westPart
     eastPart: eastPart
+    boardMenu: boardMenu
     CornerBox:
         id: startBox
         pos_hint: {'x': .0, 'y': .0}
+        playerMarkerArea: startPlayerMarkerArea
+        AnchorLayout:
+            anchor_x: 'left'
+            anchor_y: 'top'
+            VerticalPlayerMarkerArea:
+                id: startPlayerMarkerArea
     CornerBox:
         id: jailBox
         pos_hint: {'x': .0, 'y': .8462}
+        playerMarkerArea: playerMarkerJailVisitorArea
+        playerMarkerJailArea: playerMarkerJailArea
+        BoxLayout:
+            size_hint: (.7, 1)
+            AnchorLayout:
+                anchor_x: 'left'
+                anchor_y: 'top'
+                VerticalPlayerMarkerArea:
+                    id: playerMarkerJailArea
+        AnchorLayout:
+            anchor_x: 'left'
+            anchor_y: 'bottom'
+            VerticalPlayerMarkerArea:
+                id: playerMarkerJailVisitorArea
     CornerBox:
         id: parkingBox
         pos_hint: {'x': .8462, 'y': .8462}
+        playerMarkerArea: parkPlayerMarkerArea
+        AnchorLayout:
+            anchor_x: 'left'
+            anchor_y: 'top'
+            VerticalPlayerMarkerArea:
+                id: parkPlayerMarkerArea
     CornerBox:
         id: goToJailBox
         pos_hint: {'x': .8462, 'y': .0}
+        playerMarkerArea: goToJailPlayerMarkerArea
+        AnchorLayout:
+            anchor_x: 'left'
+            anchor_y: 'top'
+            VerticalPlayerMarkerArea:
+                id: goToJailPlayerMarkerArea
     FieldRow:
         id: northPart
         orientation: "horizontal"
@@ -353,8 +404,7 @@
         orientation: "vertical"
         size_hint: (.1538, .6923)
         pos_hint: {'x': .8462, 'y': .1538}
-    BoardMenu:
-        id: boardMenu
+    FloatLayout:
         size_hint: (.6923, .6923)
         pos_hint: {'x': .1538, 'y': .1538}
         DiceArea:
@@ -365,11 +415,42 @@
             pos_hint: {'x': 0, 'y': 0}
             Label:
                 text: "Field details"
-        BoxLayout:
+        BoardMenuWrapper:
+            id: boardMenu
             size_hint: (.66667, 1)
             pos_hint: {'x': .3333, 'y': 0}
-            Label:
-                text: "Game menu"
+            WaitForMove
+
+<BoardMenu>:
+    orientation: "vertical"
+
+<WaitForMove@BoardMenu>:
+    Label:
+        text: "Wait for your move..."
+
+<RollTheDice@BoardMenu>:
+    Button:
+        text: "Roll the dice"
+        on_press: root.rollTheDice()
+
+<BuyEstate@BoardMenu>:
+    fieldName: fieldName
+    fieldValue: fieldValue
+    Label:
+        id: fieldName
+    Label:
+        id: fieldValue
+    Button:
+        text: "Buy"
+        on_press: root.buy()
+    Button:
+        text: "Don't buy"
+        on_press: root.doNotBuy()
+
+<EndMove@BoardMenu>:
+    Button:
+        text: "End move"
+        on_press: root.endMove()
 
 <DiceArea>:
     orientation: "vertical"
@@ -451,19 +532,7 @@
             pos: self.pos
             size: self.size
 
-<HorizontalPlayerMarkerArea@FloatLayout>:
-    size_hint: (None, 1)
-    width: 15
-    canvas.before:
-        Color:
-            rgb: .8392, .9412, .8392
-        Rectangle:
-            pos: self.pos
-            size: self.size
-
-<VerticalPlayerMarkerArea@FloatLayout>:
-    size_hint: (1, None)
-    height: 15
+<CityField>:
     canvas.before:
         Color:
             rgb: .8392, .9412, .8392
@@ -538,6 +607,14 @@
             id: value
     VerticalPlayerMarkerArea:
         id: playerMarkerArea
+
+<SpecialField>:
+    canvas.before:
+        Color:
+            rgb: .8392, .9412, .8392
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 <SpecialWestField>:
     orientation: "horizontal"

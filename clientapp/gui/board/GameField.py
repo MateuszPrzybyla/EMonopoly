@@ -1,5 +1,3 @@
-from kivy.graphics.context_instructions import Color
-from kivy.graphics.vertex_instructions import Rectangle
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -63,9 +61,16 @@ class CityField(BoxLayout):
         self.ownerColor = (0, 0, 0)
         self.playerMarkers = dict()
 
+    def setInitialState(self):
+        self.markBoughtByPlayer("#000000")
+        self.buildingArea.setHouse(0)
+
     def markBoughtByPlayer(self, hexColor):
         self.cityName.ownerColor = parseColor(hexColor)
         self.value.ownerColor = parseColor(hexColor)
+
+    def setHouse(self, houseNo):
+        self.buildingArea.setHouse(houseNo)
 
     def putPlayerOnField(self, playerNo, hexColor):
         marker = self.createPlayerMarker(playerNo, hexColor)
@@ -125,6 +130,9 @@ class SpecialField(BoxLayout):
             self.value.text = str(value) + " $"
         self.playerMarkers = dict()
 
+    def setInitialState(self):
+        self.markBoughtByPlayer("#000000")
+
     def markBoughtByPlayer(self, hexColor):
         for label in self.namesWrapper.children:
             label.ownerColor = parseColor(hexColor)
@@ -143,16 +151,6 @@ class SpecialField(BoxLayout):
     def removePlayerFromField(self, playerNo):
         if playerNo in self.playerMarkers:
             self.playerMarkerArea.clear_widgets(children=[self.playerMarkers[playerNo]])
-
-
-class SpecialHorizontalField(SpecialField):
-    def createPlayerMarker(self, playerNo, hexColor):
-        return PlayerMarker(playerNo, hexColor, False)
-
-
-class SpecialVerticalField(SpecialField):
-    def createPlayerMarker(self, playerNo, hexColor):
-        return PlayerMarker(playerNo, hexColor, True)
 
 
 class SpecialEastField(SpecialField):
@@ -177,3 +175,29 @@ class SpecialNorthField(SpecialField):
 
 class CornerBox(BoxLayout):
     imageSrc = StringProperty(None)
+    playerMarkerArea = ObjectProperty()
+    playerMarkerJailArea = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super(CornerBox, self).__init__(**kwargs)
+        self.playerMarkers = dict()
+
+    def putPlayerOnField(self, playerNo, hexColor, inJail):
+        marker = self.createPlayerMarker(playerNo, hexColor)
+        if not marker:
+            return
+        self.playerMarkers[playerNo] = marker
+        if inJail:
+            if self.playerMarkerJailArea:
+                self.playerMarkerJailArea.add_widget(marker)
+        else:
+            self.playerMarkerArea.add_widget(marker)
+
+    def createPlayerMarker(self, playerNo, hexColor):
+        return PlayerMarker(playerNo, hexColor, True)
+
+    def removePlayerFromField(self, playerNo):
+        if playerNo in self.playerMarkers:
+            self.playerMarkerArea.clear_widgets(children=[self.playerMarkers[playerNo]])
+            if self.playerMarkerJailArea:
+                self.playerMarkerJailArea.clear_widgets(children=[self.playerMarkers[playerNo]])

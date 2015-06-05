@@ -19,11 +19,11 @@ class GameStartResponseHandler(object):
             if msg['responseData']['gameStarted']:
                 self.gameWidget.clear_widgets()
                 boardWidget = GameBoard()
-                boardWidget.initialize(msg['responseData']['gameData'])
+                boardWidget.initialize(msg['responseData'])
                 self.gameWidget.add_widget(boardWidget)
                 self.chatController.appendMessage('Game is on!', '', '', infoMessage=True)
             else:
                 self.gameWidget.startMsgLabel.text = \
                     "Waiting for all players to start... (%d left)" % msg['responseData']['playersLeft']
         else:
-            print "GAME_START failed"
+            print "START_GAME failed"

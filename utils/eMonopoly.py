@@ -2,8 +2,8 @@ __author__ = 'mateusz'
 
 
 class FieldType(object):
+    START = "START"
     CITY = "CITY"
-    BONUS = "BONUS"
     TAX = "TAX"
     DRAW_CHANCE = "CHANCE"
     DRAW_COMMUNITY = "COMMUNITY"
@@ -34,6 +34,9 @@ class Field(object):
         self.value = value
         self.fees = fees
 
+    def isBuyable(self):
+        return self.type in [FieldType.CITY, FieldType.AIRPORT, FieldType.WATER_POWER]
+
     def toDict(self):
         return {
             'number': self.number,
@@ -46,7 +49,7 @@ class Field(object):
 
 
 GAME_FIELDS = [
-    Field(0, 'Start', FieldType.BONUS),
+    Field(0, 'Start', FieldType.START),
 
     Field(1, 'Vilnius', FieldType.CITY, FieldColor.BROWN, 60, [2, 10, 30, 90, 160, 250]),
     Field(2, 'Community Chest', FieldType.DRAW_COMMUNITY),
@@ -95,3 +98,11 @@ GAME_FIELDS = [
     Field(39, 'Paris', FieldType.CITY, FieldColor.DARK_BLUE, 400, [50, 200, 600, 1400, 1700, 2000]),
 
 ]
+
+class MoveType(object):
+    DICE = 'DICE'
+    BUY = 'BUY'
+    DRAW = 'DRAW'
+    BID = 'BID'
+    END = 'END'
+    BROKEN = 'BROKEN'

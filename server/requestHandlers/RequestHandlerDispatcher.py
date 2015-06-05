@@ -1,5 +1,6 @@
 import json
 from server.requestHandlers.CreateRoomRequestHandler import CreateRoomRequestHandler
+from server.requestHandlers.GameMoveRequestHandler import GameMoveRequestHandler
 from server.requestHandlers.GameStartRequestHandler import GameStartRequestHandler
 from server.requestHandlers.GetRoomsRequestHandler import GetRoomsRequestHandler
 from server.requestHandlers.JoinRoomRequestHandler import JoinRoomRequestHandler
@@ -25,8 +26,9 @@ class RequestHandlerDispatcher(object):
             'GET_ROOMS': GetRoomsRequestHandler(self.gameServer),
             'JOIN_ROOM': JoinRoomRequestHandler(self.gameServer),
             'QUIT_ROOM': QuitRoomRequestHandler(self.gameServer),
-            'GAME_START': GameStartRequestHandler(self.gameServer)
+            'START_GAME': GameStartRequestHandler(self.gameServer)
         }
+        self.gameMoveHandler = GameMoveRequestHandler(self.gameServer)
         self.defaultHandler = UnknownRequestHandler()
 
     def handle(self, jsonMsg, clientSocket):
@@ -38,6 +40,8 @@ class RequestHandlerDispatcher(object):
         else:
             if msg['action'] in self.handlersMap:
                 handler = self.handlersMap[msg['action']]
+            elif msg['action'].startswith('GAME_'):
+                handler = self.gameMoveHandler
             else:
                 handler = self.defaultHandler
         clientPlayer = self.gameServer.getClientPlayer(clientSocket)

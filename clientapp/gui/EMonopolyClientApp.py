@@ -1,3 +1,4 @@
+from kivy.resources import resource_add_path
 from clientapp.gui.SingleRoomScreen import SingleRoomScreen
 
 __author__ = 'mateusz'
@@ -21,9 +22,11 @@ Factory.register('SingleRoomGameWidget', module='clientapp.gui.SingleRoomGameWid
 Factory.register('HorizontalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
 Factory.register('VerticalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
 Factory.register('BoardMenu', module='clientapp.gui.board.BoardMenu')
+Factory.register('DiceArea', module='clientapp.gui.board.BoardMenu')
 Factory.register('PlayerMarker', module='clientapp.gui.board.GameField')
 
 from kivy.config import Config
+
 Config.set('graphics', 'width', '1000')
 Config.set('graphics', 'height', '700')
 Config.set('graphics', 'resizable', '0')
@@ -63,5 +66,6 @@ class EMonopolyClientApp(App):
 
     def currentScreen(self):
         return self.screenManager.current_screen
+
 
 EMonopolyClientApp().run()
