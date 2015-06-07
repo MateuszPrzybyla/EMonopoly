@@ -28,6 +28,11 @@ class GameMoveRequestHandler(RequestHandler):
         super(GameMoveRequestHandler, self).__init__()
         self.gameServer = gameServer
 
+    def getBidEndCallback(self, room):
+        def callback(game):
+            self.gameServer.broadcastAllRoom(room, GameStateResponse(True, "", game.toDictStateOnly()))
+        return callback
+
     def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if not clientPlayer:
             return NotAPlayerResponse()
@@ -40,14 +45,16 @@ class GameMoveRequestHandler(RequestHandler):
         if action == MoveType.DICE:
             diceResult = monopolyGame.doDiceMove(clientPlayer.id, expectedMove)
         elif action == MoveType.BUY:
-            monopolyGame.doBuyEstate(clientPlayer.id, msg)
+            monopolyGame.doBuyEstate(clientPlayer.id, msg, self.getBidEndCallback(joinedRoom))
         elif action == MoveType.FEE:
             monopolyGame.doPayFee(clientPlayer.id, msg, expectedMove)
         elif action == MoveType.JAIL:
             diceResult = monopolyGame.doJailMove(clientPlayer.id, msg, expectedMove)
+        elif action == MoveType.BID:
+            monopolyGame.doBidMove(clientPlayer.id, msg)
         elif action == MoveType.END:
             monopolyGame.doEndMove(clientPlayer.id)
-        self.gameServer.broadcastAllRoom(joinedRoom,
-                                         GameStateResponse(True, "", monopolyGame.toDictStateOnly(), diceResult))
         print "Game moves queue (%d): %s" % (
             len(monopolyGame.nextMoves), [str(move) for move in reversed(monopolyGame.nextMoves)])
+        self.gameServer.broadcastAllRoom(joinedRoom,
+                                         GameStateResponse(True, "", monopolyGame.toDictStateOnly(), diceResult))

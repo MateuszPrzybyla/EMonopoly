@@ -1,6 +1,8 @@
 from threading import Lock
-from server.MonopolyGame import MonopolyGame
+from server.monopoly.MonopolyGame import MonopolyGame
+
 from utils.decorators import synchronized
+
 
 __author__ = 'mateusz'
 

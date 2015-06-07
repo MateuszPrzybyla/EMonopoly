@@ -499,6 +499,29 @@
         text: "Use 'Get Out of Jail' Card"
         on_press: root.useTheCard()
 
+<Bidding@BoardMenu>:
+    fieldName: fieldName
+    currentWinner: currentWinner
+    currentValue: currentValue
+    bidValue: bidValue
+    Label:
+        text: "Bidding started!"
+    Label:
+        id: fieldName
+    Label:
+        id: currentWinner
+    Label:
+        id: currentValue
+    TextInput:
+        id: bidValue
+        multiline: False
+        font_size: '20dp'
+        height: 40
+        size_hint: (1, None)
+    Button:
+        text: "Bid"
+        on_press: root.bid(root.bidValue.text)
+
 <EndMove@BoardMenu>:
     Button:
         text: "End move"

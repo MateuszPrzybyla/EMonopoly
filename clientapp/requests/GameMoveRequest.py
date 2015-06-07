@@ -26,6 +26,12 @@ class GameMoveRequest(Request):
         })
 
     @staticmethod
+    def bidMove(value):
+        return GameMoveRequest(MoveType.BID, {
+            'value': value
+        })
+
+    @staticmethod
     def quitJail(method):
         return GameMoveRequest(MoveType.JAIL, {
             'method': method

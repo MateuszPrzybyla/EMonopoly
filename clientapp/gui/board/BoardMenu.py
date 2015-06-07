@@ -35,6 +35,8 @@ class BoardMenuWrapper(BoxLayout):
             self.add_widget(PayFee(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.JAIL:
             self.add_widget(InJail(nextMove['moveData']))
+        elif nextMove['moveType'] == MoveType.BID:
+            self.add_widget(Bidding(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.END:
             self.add_widget(EndMove())
 
@@ -71,6 +73,7 @@ class BuyEstate(BoardMenu):
     def doNotBuy(self):
         self.gameServerClient.send(GameMoveRequest.buyResponse(self.fieldNo, False))
 
+
 class PayFee(BoardMenu):
     targetPlayer = ObjectProperty()
     fee = ObjectProperty()
@@ -88,6 +91,7 @@ class PayFee(BoardMenu):
 
     def goBankrupt(self):
         self.gameServerClient.send(GameMoveRequest.payFee(False))
+
 
 class InJail(BoardMenu):
     turnsLeft = ObjectProperty()
@@ -110,6 +114,27 @@ class InJail(BoardMenu):
 
     def useTheCard(self):
         self.gameServerClient.send(GameMoveRequest.quitJail('card'))
+
+
+class Bidding(BoardMenu):
+    fieldName = ObjectProperty()
+    currentValue = ObjectProperty()
+    currentWinner = ObjectProperty()
+
+    def __init__(self, moveData, **kwargs):
+        super(Bidding, self).__init__(**kwargs)
+        self.fieldNo = moveData['fieldNo']
+        self.fieldName.text = self.app.getData('gameFields')[self.fieldNo]['name']
+        self.currentWinner.text = "Winner: %s" % moveData['currentWinner']['name'] \
+            if 'currentWinner' in moveData else ""
+        self.currentValue.text = "Winning price: %d $" % moveData['currentMin']
+
+    def bid(self, bidValue):
+        try:
+            self.gameServerClient.send(GameMoveRequest.bidMove(int(bidValue)))
+        except ValueError:
+            pass
+
 
 class EndMove(BoardMenu):
     def endMove(self):

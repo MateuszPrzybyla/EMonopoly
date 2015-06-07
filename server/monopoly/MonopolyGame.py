@@ -1,13 +1,21 @@
+from Queue import Queue
 import random
+from threading import Event
+import server.Bidding
+from server.Bidding import Bid
+from server.ClientPlayer import ClientPlayer
+from server.monopoly.GameField import GameField
+from server.monopoly.GameMove import GameMove
+from server.monopoly.PlayerData import PlayerData
 
-from utils.eMonopoly import GAME_FIELDS, MoveType
+from utils.eMonopoly import GAME_FIELDS, MoveType, FieldType
 
 
 __author__ = 'mateusz'
 
-JAIL_POSITION = 10
 GO_TO_JAIL_POSITION = 30
 JAIL_QUIT_FEE = 50
+BID_TIME_SECONDS = 10
 
 
 class GameState(object):
@@ -16,170 +24,24 @@ class GameState(object):
     FROZEN = 'FROZEN'
 
 
-class PlayerData(object):
-    def __init__(self, fieldPosition=0, startBalance=1500):
-        self.fieldPosition = fieldPosition
-        self.singleMoveChanges = []
-        self.singleMoveStart = fieldPosition
-        self.balance = startBalance
-        self.inJailTurns = 0
-        self.inJail = False
-        self.buildings = dict()
-
-    def movePlayer(self, moveSize):
-        self.fieldPosition += moveSize
-        self.fieldPosition %= 40
-        self.singleMoveChanges.append(moveSize)
-        return self.fieldPosition
-
-    def movePlayerToField(self, fieldNumber, forward=True):
-        change = (fieldNumber - self.fieldPosition + 40) % 40
-        if not forward:
-            change = 40 - change
-        self.singleMoveChanges.append(change)
-        self.fieldPosition = fieldNumber
-        return self.fieldPosition
-
-    def resetMove(self):
-        self.singleMoveChanges = []
-        self.singleMoveStart = self.fieldPosition
-
-    def calculateStartPasses(self):
-        startPasses = 0
-        previous = self.singleMoveStart
-        for change in self.singleMoveChanges:
-            if previous + change >= 40 and change > 0:
-                startPasses += 1
-            previous = (previous + change + 40) % 40
-        return startPasses
-
-    def addBalance(self, change):
-        self.balance += change
-
-    def goToJail(self):
-        self.inJailTurns = 0
-        self.inJail = True
-        self.fieldPosition = JAIL_POSITION
-        self.resetMove()
-
-    def isInJail(self):
-        return self.inJail
-
-    def countJailTurns(self):
-        if self.inJail:
-            self.inJailTurns += 1
-
-    def turnsInJailLeft(self):
-        if not self.inJail:
-            return 0
-        return 3 - self.inJailTurns
-
-    def quitJail(self):
-        self.inJail = False
-        self.inJailTurns = 0
-
-    def hasJailCard(self):  # TODO add field
-        return False
-
-    def toDict(self):
-        return {
-            'position': self.fieldPosition,
-            'singleMoveChanges': self.singleMoveChanges,
-            'singleMoveStart': self.singleMoveStart,
-            'balance': self.balance,
-            'buildings': self.buildings,
-            'inJail': self.inJail
-        }
-
-
-class GameMove(object):
-    def __init__(self, eligiblePlayers, moveType, moveData=None):
-        self.eligiblePlayers = eligiblePlayers
-        self.moveType = moveType
-        self.moveData = moveData
-
-    def toDict(self):
-        if self.moveData:
-            return {
-                'eligiblePlayers': [player.toDict() for player in self.eligiblePlayers],
-                'moveType': self.moveType,
-                'moveData': self.moveData
-            }
-        else:
-            return {
-                'eligiblePlayers': [player.toDict() for player in self.eligiblePlayers],
-                'moveType': self.moveType
-            }
-
-    @staticmethod
-    def diceMove(player, rollNumber=1):
-        return GameMove([player], MoveType.DICE, {'roll': rollNumber})
-
-    @staticmethod
-    def buyOptionMove(player, field):
-        return GameMove([player], MoveType.BUY, {
-            'fieldNo': field.number,
-            'value': field.value
-        })
-
-    @staticmethod
-    def feeMove(player, targetPlayer, field):
-        return GameMove([player], MoveType.FEE, {
-            'targetPlayer': targetPlayer.toDict(),
-            'fieldNo': field.model.number,
-            'fee': field.getFee()
-        })
-
-    @staticmethod
-    def inJail(player, turnsInJailLeft, hasJailCard):
-        return GameMove([player], MoveType.JAIL, {
-            'turnsLeft': turnsInJailLeft,
-            'hasCard': hasJailCard
-        })
-
-    @staticmethod
-    def endMove(player):
-        return GameMove([player], MoveType.END)
-
-    def __str__(self):
-        return "TYPE: %s, PLAYERS: %s, MOVE_DATA: %s" % (
-            self.moveType, [player.name for player in self.eligiblePlayers], str(self.moveData) )
-
-
-class GameField(object):
-    def __init__(self, model):
-        self.model = model
-        self.owner = None
-        self.houses = 0
-        self.mortgage = False
-        self.monopoly = False
-
-    def isDefault(self):
-        return not self.owner and self.houses == 0 and not self.mortgage
-
-    def getFee(self):  # TODO calculate it more seriously
-        return 163
-
-    def toDictStateOnly(self):
-        return {
-            'owner': self.owner,
-            'houses': self.houses,
-            'mortgage': self.mortgage
-        }
-
-
 class MonopolyGame(object):
     START_PASS_BONUS = 200
 
     def __init__(self, id, playersNumber, players):
         self.id = id
         self.fieldsSet = [GameField(FIELD_MODEL) for FIELD_MODEL in GAME_FIELDS]
+        for field in self.fieldsSet:
+            field.fieldSet = self.fieldsSet
         self.state = GameState.NEW
         self.playersNumber = playersNumber
         self.players = players
+        self.bankPlayer = ClientPlayer.bankPlayer()
         self.startRequest = set()
         self.playersData = dict()
         self.nextMoves = list()
+        self.biddingQueue = Queue()
+        self.biddingManager = None
+        self.waitForBidMoveEvent = Event()
 
     def addStartRequest(self, player):
         alreadyExists = player in self.startRequest
@@ -220,26 +82,36 @@ class MonopolyGame(object):
         else:
             startPasses = self.playersData[playerId].calculateStartPasses()
             self.playersData[playerId].addBalance(startPasses * MonopolyGame.START_PASS_BONUS)
-        self.performPlayerOnFieldAction(self.fieldsSet[newPosition], playerId)
+        self.performPlayerOnFieldAction(self.fieldsSet[newPosition], playerId, diceSum)
         return dices
 
-    def performPlayerOnFieldAction(self, field, playerId):
+    def performPlayerOnFieldAction(self, field, playerId, diceResult):
         playerNo = self.getPlayerNo(playerId)
         if field.model.isBuyable() and not field.owner:
             self.nextMoves.append(GameMove.buyOptionMove(self.players[playerNo], field.model))
         elif field.owner and field.owner != playerId and not field.mortgage:
             targetNo = self.getPlayerNo(field.owner)
-            self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.players[targetNo], field))
+            self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.players[targetNo], field, diceResult))
         elif field.model.number == GO_TO_JAIL_POSITION:
             self.playersData[playerId].goToJail()
+        elif field.model.type == FieldType.TAX:
+            self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.bankPlayer, field, diceResult))
 
-    def doBuyEstate(self, playerId, moveDetails):
+    def estateBidEnded(self, bidCallback):
+        def combinedCallback(biddingResult):
+            winner = biddingResult.winningBid.owner
+            biddingResult.field.owner = winner.id
+            self.playersData[winner.id].addBalance(-biddingResult.winningBid.value)
+            bidCallback(self)
+        return combinedCallback
+
+    def doBuyEstate(self, playerId, moveDetails, bidCallback):
+        field = self.fieldsSet[moveDetails['fieldNo']]
         if moveDetails['decision']:
-            field = self.fieldsSet[moveDetails['fieldNo']]
             field.owner = playerId
             self.playersData[playerId].addBalance(-field.model.value)
         else:
-            pass  # TODO licytacja
+            self.startFieldBidding(field, self.estateBidEnded(bidCallback))
 
     def doPayFee(self, playerId, moveDetails, expectedMove):
         if moveDetails['pay']:
@@ -252,7 +124,8 @@ class MonopolyGame(object):
                 self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.players[targetNo], field))
             else:
                 self.playersData[playerId].addBalance(-fee)
-                self.playersData[expectedMoveData['targetPlayer']['id']].addBalance(fee)
+                if expectedMoveData['targetPlayer']['id'] != ClientPlayer.BANK_ID:
+                    self.playersData[expectedMoveData['targetPlayer']['id']].addBalance(fee)
         else:
             pass  # TODO - go bankrupt
 
@@ -279,7 +152,7 @@ class MonopolyGame(object):
             if dices[0] == dices[1] or playerData.turnsInJailLeft() == 0:
                 playerData.quitJail()
                 newPosition = playerData.movePlayer(dices[0] + dices[1])
-                self.performPlayerOnFieldAction(self.fieldsSet[newPosition], playerId)
+                self.performPlayerOnFieldAction(self.fieldsSet[newPosition], playerId, dices[0] + dices[1])
             if playerData.turnsInJailLeft() == 0:
                 playerData.addBalance(-JAIL_QUIT_FEE)
             return dices
@@ -290,6 +163,23 @@ class MonopolyGame(object):
         self.playersData[playerId].resetMove()
         self.playersData[playerId].countJailTurns()
         self.addPlayerMove(nextToRoll)
+
+    def startFieldBidding(self, field, onBiddingComplete):
+        self.biddingManager = server.Bidding.BiddingManager(self.players, self.playersData, self.nextMoves, field,
+                                                            onBiddingComplete, self.biddingQueue, BID_TIME_SECONDS,
+                                                            self.waitForBidMoveEvent)
+        self.waitForBidMoveEvent.clear()
+        self.biddingManager.start()
+        print "Start bidding - wait"
+        self.waitForBidMoveEvent.wait()
+        print "Start bidding - wait finished"
+
+    def doBidMove(self, playerId, moveDetails):
+        self.waitForBidMoveEvent.clear()
+        self.biddingQueue.put(Bid(self.players[self.getPlayerNo(playerId)], moveDetails['value']))
+        print "Bid move - wait"
+        self.waitForBidMoveEvent.wait()
+        print "Bid move - wait finished"
 
     def addPlayerMove(self, playerNo):
         playerId = self.players[playerNo].id
