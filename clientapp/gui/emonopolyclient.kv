@@ -522,6 +522,16 @@
         text: "Bid"
         on_press: root.bid(root.bidValue.text)
 
+<Draw@BoardMenu>:
+    cardType: cardType
+    Label:
+        text: "DRAW"
+    Label:
+        id: cardType
+    Button:
+        text: "Draw"
+        on_press: root.draw()
+
 <EndMove@BoardMenu>:
     Button:
         text: "End move"

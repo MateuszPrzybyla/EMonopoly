@@ -49,9 +49,11 @@ class GameMoveRequestHandler(RequestHandler):
         elif action == MoveType.FEE:
             monopolyGame.doPayFee(clientPlayer.id, msg, expectedMove)
         elif action == MoveType.JAIL:
-            diceResult = monopolyGame.doJailMove(clientPlayer.id, msg, expectedMove)
+            diceResult = monopolyGame.doJailMove(clientPlayer.id, msg)
         elif action == MoveType.BID:
             monopolyGame.doBidMove(clientPlayer.id, msg)
+        elif action == MoveType.DRAW:
+            monopolyGame.doDrawMove(clientPlayer.id, expectedMove)
         elif action == MoveType.END:
             monopolyGame.doEndMove(clientPlayer.id)
         print "Game moves queue (%d): %s" % (

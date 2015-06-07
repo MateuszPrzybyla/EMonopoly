@@ -38,5 +38,9 @@ class GameMoveRequest(Request):
         })
 
     @staticmethod
+    def drawMove():
+        return GameMoveRequest(MoveType.DRAW)
+
+    @staticmethod
     def endMove():
         return GameMoveRequest(MoveType.END)

@@ -37,6 +37,8 @@ class BoardMenuWrapper(BoxLayout):
             self.add_widget(InJail(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.BID:
             self.add_widget(Bidding(nextMove['moveData']))
+        elif nextMove['moveType'] == MoveType.DRAW:
+            self.add_widget(Draw(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.END:
             self.add_widget(EndMove())
 
@@ -135,6 +137,15 @@ class Bidding(BoardMenu):
         except ValueError:
             pass
 
+class Draw(BoardMenu):
+    cardType = ObjectProperty()
+
+    def __init__(self, moveData, **kwargs):
+        super(Draw, self).__init__(**kwargs)
+        self.cardType.text = moveData['type']
+
+    def draw(self):
+        self.gameServerClient.send(GameMoveRequest.drawMove())
 
 class EndMove(BoardMenu):
     def endMove(self):

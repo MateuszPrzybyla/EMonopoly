@@ -63,6 +63,12 @@ class GameMove(object):
             })
 
     @staticmethod
+    def draw(player, drawType):
+        return GameMove([player], MoveType.DRAW, {
+            'type': drawType
+        })
+
+    @staticmethod
     def endMove(player):
         return GameMove([player], MoveType.END)
 

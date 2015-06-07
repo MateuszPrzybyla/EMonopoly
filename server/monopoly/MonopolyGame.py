@@ -1,14 +1,16 @@
 from Queue import Queue
+from copy import deepcopy
 import random
 from threading import Event
+
 import server.Bidding
 from server.Bidding import Bid
 from server.ClientPlayer import ClientPlayer
+from server.monopoly.ChanceCards import CHANCE_CARDS
 from server.monopoly.GameField import GameField
 from server.monopoly.GameMove import GameMove
 from server.monopoly.PlayerData import PlayerData
-
-from utils.eMonopoly import GAME_FIELDS, MoveType, FieldType
+from utils.eMonopoly import GAME_FIELDS, FieldType
 
 
 __author__ = 'mateusz'
@@ -42,6 +44,9 @@ class MonopolyGame(object):
         self.biddingQueue = Queue()
         self.biddingManager = None
         self.waitForBidMoveEvent = Event()
+        self.lastDice = None
+        self.chanceCards = deepcopy(CHANCE_CARDS)
+        random.shuffle(self.chanceCards)
 
     def addStartRequest(self, player):
         alreadyExists = player in self.startRequest
@@ -71,6 +76,7 @@ class MonopolyGame(object):
     def doDiceMove(self, playerId, expectedMove):
         playerNo = self.getPlayerNo(playerId)
         dices = (random.randint(1, 6), random.randint(1, 6), self.players[playerNo].name)
+        self.lastDice = (dices[0], dices[1])
         diceSum = dices[0] + dices[1]
         newPosition = self.playersData[playerId].movePlayer(diceSum)
         if dices[0] == dices[1]:
@@ -80,10 +86,13 @@ class MonopolyGame(object):
                 self.playersData[playerId].goToJail()
                 return dices
         else:
-            startPasses = self.playersData[playerId].calculateStartPasses()
-            self.playersData[playerId].addBalance(startPasses * MonopolyGame.START_PASS_BONUS)
+            self.checkStartBonus(playerId)
         self.performPlayerOnFieldAction(self.fieldsSet[newPosition], playerId, diceSum)
         return dices
+
+    def checkStartBonus(self, playerId):
+        startPasses = self.playersData[playerId].calculateStartPasses()
+        self.playersData[playerId].addBalance(startPasses * MonopolyGame.START_PASS_BONUS)
 
     def performPlayerOnFieldAction(self, field, playerId, diceResult):
         playerNo = self.getPlayerNo(playerId)
@@ -96,6 +105,8 @@ class MonopolyGame(object):
             self.playersData[playerId].goToJail()
         elif field.model.type == FieldType.TAX:
             self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.bankPlayer, field, diceResult))
+        elif field.model.type == FieldType.DRAW_CHANCE:
+            self.nextMoves.append(GameMove.draw(self.players[playerNo], 'CHANCE'))
 
     def estateBidEnded(self, bidCallback):
         def combinedCallback(biddingResult):
@@ -129,7 +140,7 @@ class MonopolyGame(object):
         else:
             pass  # TODO - go bankrupt
 
-    def doJailMove(self, playerId, moveDetails, expectedMove):
+    def doJailMove(self, playerId, moveDetails):
         playerNo = self.getPlayerNo(playerId)
         playerData = self.playersData[playerId]
         if moveDetails['method'] == 'pay' and playerData.turnsInJailLeft() > 0:
@@ -149,6 +160,7 @@ class MonopolyGame(object):
                     GameMove.inJail(self.players[playerNo], playerData.turnsInJailLeft(), playerData.hasJailCard()))
         elif moveDetails['method'] == 'dice':
             dices = (random.randint(1, 6), random.randint(1, 6), self.players[playerNo].name)
+            self.lastDice = (dices[0], dices[1])
             if dices[0] == dices[1] or playerData.turnsInJailLeft() == 0:
                 playerData.quitJail()
                 newPosition = playerData.movePlayer(dices[0] + dices[1])
@@ -180,6 +192,12 @@ class MonopolyGame(object):
         print "Bid move - wait"
         self.waitForBidMoveEvent.wait()
         print "Bid move - wait finished"
+
+    def doDrawMove(self, playerId, expectedMove):
+        if expectedMove.moveData['type'] == 'CHANCE':
+            card = self.chanceCards.pop()
+            card.handler(self, playerId)
+            self.chanceCards.insert(0, card)
 
     def addPlayerMove(self, playerNo):
         playerId = self.players[playerNo].id
