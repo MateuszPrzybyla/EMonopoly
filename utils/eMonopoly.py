@@ -102,6 +102,8 @@ GAME_FIELDS = [
 class MoveType(object):
     DICE = 'DICE'
     BUY = 'BUY'
+    FEE = 'FEE'
+    JAIL = 'JAIL'
     DRAW = 'DRAW'
     BID = 'BID'
     END = 'END'

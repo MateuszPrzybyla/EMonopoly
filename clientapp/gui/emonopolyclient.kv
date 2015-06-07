@@ -329,8 +329,7 @@
             size: self.size
 
 <GameBoard>:
-    size_hint: (None, None)
-    size: (650, 650)
+    orientation: "vertical"
     startBox: startBox
     jailBox: jailBox
     goToJailBox: goToJailBox
@@ -339,87 +338,104 @@
     southPart: southPart
     westPart: westPart
     eastPart: eastPart
+    diceArea: diceArea
     boardMenu: boardMenu
-    CornerBox:
-        id: startBox
-        pos_hint: {'x': .0, 'y': .0}
-        playerMarkerArea: startPlayerMarkerArea
-        AnchorLayout:
-            anchor_x: 'left'
-            anchor_y: 'top'
-            VerticalPlayerMarkerArea:
-                id: startPlayerMarkerArea
-    CornerBox:
-        id: jailBox
-        pos_hint: {'x': .0, 'y': .8462}
-        playerMarkerArea: playerMarkerJailVisitorArea
-        playerMarkerJailArea: playerMarkerJailArea
-        BoxLayout:
-            size_hint: (.7, 1)
-            AnchorLayout:
-                anchor_x: 'left'
-                anchor_y: 'top'
-                VerticalPlayerMarkerArea:
-                    id: playerMarkerJailArea
-        AnchorLayout:
-            anchor_x: 'left'
-            anchor_y: 'bottom'
-            VerticalPlayerMarkerArea:
-                id: playerMarkerJailVisitorArea
-    CornerBox:
-        id: parkingBox
-        pos_hint: {'x': .8462, 'y': .8462}
-        playerMarkerArea: parkPlayerMarkerArea
-        AnchorLayout:
-            anchor_x: 'left'
-            anchor_y: 'top'
-            VerticalPlayerMarkerArea:
-                id: parkPlayerMarkerArea
-    CornerBox:
-        id: goToJailBox
-        pos_hint: {'x': .8462, 'y': .0}
-        playerMarkerArea: goToJailPlayerMarkerArea
-        AnchorLayout:
-            anchor_x: 'left'
-            anchor_y: 'top'
-            VerticalPlayerMarkerArea:
-                id: goToJailPlayerMarkerArea
-    FieldRow:
-        id: northPart
-        orientation: "horizontal"
-        size_hint: (.6923, .1538)
-        pos_hint: {'x': .1538, 'y': .8462}
-    FieldRow:
-        id: southPart
-        orientation: "horizontal"
-        size_hint: (.6923, .1538)
-        pos_hint: {'x': .1538, 'y': 0}
-    FieldRow:
-        id: westPart
-        orientation: "vertical"
-        size_hint: (.1538, .6923)
-        pos_hint: {'x': 0, 'y': .1538}
-    FieldRow:
-        id: eastPart
-        orientation: "vertical"
-        size_hint: (.1538, .6923)
-        pos_hint: {'x': .8462, 'y': .1538}
-    FloatLayout:
-        size_hint: (.6923, .6923)
-        pos_hint: {'x': .1538, 'y': .1538}
-        DiceArea:
-            size_hint: (.33333, .33333)
-            pos_hint: {'x': 0, 'y': .66667}
-        BoxLayout:
-            size_hint: (.33333, .66667)
-            pos_hint: {'x': 0, 'y': 0}
-            Label:
-                text: "Field details"
-        BoardMenuWrapper:
-            id: boardMenu
-            size_hint: (.66667, 1)
-            pos_hint: {'x': .3333, 'y': 0}
-            WaitForMove
+    gameStats: gameStats
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+        size_hint: (1, None)
+        height: 650
+        FloatLayout:
+            size_hint: (None, None)
+            size: (650, 650)
+            CornerBox:
+                id: startBox
+                pos_hint: {'x': .0, 'y': .0}
+                playerMarkerArea: startPlayerMarkerArea
+                AnchorLayout:
+                    anchor_x: 'left'
+                    anchor_y: 'top'
+                    VerticalPlayerMarkerArea:
+                        id: startPlayerMarkerArea
+            CornerBox:
+                id: jailBox
+                pos_hint: {'x': .0, 'y': .8462}
+                playerMarkerArea: playerMarkerJailVisitorArea
+                playerMarkerJailArea: playerMarkerJailArea
+                BoxLayout:
+                    size_hint: (.7, 1)
+                    AnchorLayout:
+                        anchor_x: 'left'
+                        anchor_y: 'top'
+                        VerticalPlayerMarkerArea:
+                            id: playerMarkerJailArea
+                AnchorLayout:
+                    anchor_x: 'left'
+                    anchor_y: 'bottom'
+                    VerticalPlayerMarkerArea:
+                        id: playerMarkerJailVisitorArea
+            CornerBox:
+                id: parkingBox
+                pos_hint: {'x': .8462, 'y': .8462}
+                playerMarkerArea: parkPlayerMarkerArea
+                AnchorLayout:
+                    anchor_x: 'left'
+                    anchor_y: 'top'
+                    VerticalPlayerMarkerArea:
+                        id: parkPlayerMarkerArea
+            CornerBox:
+                id: goToJailBox
+                pos_hint: {'x': .8462, 'y': .0}
+                playerMarkerArea: goToJailPlayerMarkerArea
+                AnchorLayout:
+                    anchor_x: 'left'
+                    anchor_y: 'top'
+                    VerticalPlayerMarkerArea:
+                        id: goToJailPlayerMarkerArea
+            FieldRow:
+                id: northPart
+                orientation: "horizontal"
+                size_hint: (.6923, .1538)
+                pos_hint: {'x': .1538, 'y': .8462}
+            FieldRow:
+                id: southPart
+                orientation: "horizontal"
+                size_hint: (.6923, .1538)
+                pos_hint: {'x': .1538, 'y': 0}
+            FieldRow:
+                id: westPart
+                orientation: "vertical"
+                size_hint: (.1538, .6923)
+                pos_hint: {'x': 0, 'y': .1538}
+            FieldRow:
+                id: eastPart
+                orientation: "vertical"
+                size_hint: (.1538, .6923)
+                pos_hint: {'x': .8462, 'y': .1538}
+            FloatLayout:
+                size_hint: (.6923, .6923)
+                pos_hint: {'x': .1538, 'y': .1538}
+                DiceArea:
+                    id: diceArea
+                    size_hint: (.33333, .33333)
+                    pos_hint: {'x': 0, 'y': .66667}
+                BoxLayout:
+                    size_hint: (.33333, .66667)
+                    pos_hint: {'x': 0, 'y': 0}
+                    Label:
+                        text: "Field details"
+                BoardMenuWrapper:
+                    id: boardMenu
+                    size_hint: (.66667, 1)
+                    pos_hint: {'x': .3333, 'y': 0}
+                    WaitForMove
+    GridLayout:
+        id: gameStats
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+        rows: 1
+        cols: 4
 
 <BoardMenu>:
     orientation: "vertical"
@@ -447,6 +463,42 @@
         text: "Don't buy"
         on_press: root.doNotBuy()
 
+<PayFee@BoardMenu>:
+    targetPlayer: targetPlayer
+    fee: fee
+    Label:
+        text: "You must pay the fee!"
+    Label:
+        id: targetPlayer
+    Label:
+        id: fee
+    Button:
+        text: "Pay the fee"
+        on_press: root.payFee()
+    Button:
+        text: "I'm broken"
+        on_press: root.goBankrupt()
+
+<InJail@BoardMenu>:
+    turnsLeft: turnsLeft
+    jailCard: jailCard
+    payAndQuitBtn: payAndQuitBtn
+    Label:
+        text: "You are in jail!"
+    Label:
+        id: turnsLeft
+    Button:
+        id: payAndQuitBtn
+        text: "Pay and quit"
+        on_press: root.payAndQuit()
+    Button:
+        text: "Roll the dice"
+        on_press: root.rollTheDice()
+    Button:
+        id: jailCard
+        text: "Use 'Get Out of Jail' Card"
+        on_press: root.useTheCard()
+
 <EndMove@BoardMenu>:
     Button:
         text: "End move"
@@ -459,16 +511,16 @@
     diceTwo: diceTwo
     Label:
         id: diceOwner
-        text: "LisuBB rolls..."
+        text: ""
     BoxLayout:
         orientation: "horizontal"
         Label:
             id: diceOne
-            text: "5"
+            text: ""
             font_size: '30sp'
         Label:
             id: diceTwo
-            text: "3"
+            text: ""
             font_size: '30sp'
 
 <CityFieldDetails>:

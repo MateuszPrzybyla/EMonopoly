@@ -14,6 +14,7 @@ class GameStateResponse(Response):
         if diceResult:
             responseData['dice1'] = diceResult[0]
             responseData['dice2'] = diceResult[1]
+            responseData['diceOwner'] = diceResult[2]
         super(GameStateResponse, self).__init__("GAME_STATE", success, msg, responseData)
 
 
@@ -40,6 +41,10 @@ class GameMoveRequestHandler(RequestHandler):
             diceResult = monopolyGame.doDiceMove(clientPlayer.id, expectedMove)
         elif action == MoveType.BUY:
             monopolyGame.doBuyEstate(clientPlayer.id, msg)
+        elif action == MoveType.FEE:
+            monopolyGame.doPayFee(clientPlayer.id, msg, expectedMove)
+        elif action == MoveType.JAIL:
+            diceResult = monopolyGame.doJailMove(clientPlayer.id, msg, expectedMove)
         elif action == MoveType.END:
             monopolyGame.doEndMove(clientPlayer.id)
         self.gameServer.broadcastAllRoom(joinedRoom,

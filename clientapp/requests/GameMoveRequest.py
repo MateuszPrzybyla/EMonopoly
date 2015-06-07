@@ -20,5 +20,17 @@ class GameMoveRequest(Request):
         })
 
     @staticmethod
+    def payFee(pay):
+        return GameMoveRequest(MoveType.FEE, {
+            'pay': pay
+        })
+
+    @staticmethod
+    def quitJail(method):
+        return GameMoveRequest(MoveType.JAIL, {
+            'method': method
+        })
+
+    @staticmethod
     def endMove():
         return GameMoveRequest(MoveType.END)

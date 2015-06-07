@@ -1,11 +1,14 @@
+from collections import OrderedDict
 from os.path import dirname
+
 from kivy.app import App
 
 from kivy.properties import ObjectProperty
-from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 
 from clientapp.gui.board.GameField import WestCityField, NorthCityField, EastCityField, \
-    SouthCityField, CityField, SpecialField, SpecialWestField, SpecialNorthField, SpecialEastField, \
+    SouthCityField, CityField, SpecialWestField, SpecialNorthField, SpecialEastField, \
     SpecialSouthField, CornerBox
 from utils.eMonopoly import FieldType
 
@@ -15,7 +18,7 @@ __author__ = 'mateusz'
 PLAYER_COLORS = ["#FF0000", "#00FF00", "#0000FF", "#FF00FF"]
 
 
-class GameBoard(FloatLayout):
+class GameBoard(BoxLayout):
     startBox = ObjectProperty()
     jailBox = ObjectProperty()
     parkingBox = ObjectProperty()
@@ -24,13 +27,15 @@ class GameBoard(FloatLayout):
     southPart = ObjectProperty()
     westPart = ObjectProperty()
     eastPart = ObjectProperty()
+    diceArea = ObjectProperty()
     boardMenu = ObjectProperty()
+    gameStats = ObjectProperty()
 
     def __init__(self, **kwargs):
         super(GameBoard, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.widgetFields = dict()
-        self.players = []
+        self.players = OrderedDict()
         self.playersData = dict()
         self.playersRenderedPositions = dict()
 
@@ -46,7 +51,8 @@ class GameBoard(FloatLayout):
         self.createCornerBoxFieldView(20, self.parkingBox, 'cornerfreepark.jpg')
         self.createCornerBoxFieldView(30, self.goToJailBox, 'cornerjail.jpg')
 
-        self.players = self.assignColors(gameData['players'])
+        self.players = self.assignAdditionalData(gameData['players'])
+        self.createPlayersBalanceStats(gameData['playersData'])
         self.updateGameState(data)
 
     def createCornerBoxFieldView(self, number, cornerBox, bgFileName):
@@ -65,30 +71,34 @@ class GameBoard(FloatLayout):
             self.widgetFields[field['number']] = widgetField
             appDataFields[field['number']] = field
 
-    def assignColors(self, players):
+    def createPlayersBalanceStats(self, playersData):
+        for playerId, player in self.players.items():
+            self.gameStats.add_widget(
+                Label(text="%s: %d" % (player['name'], playersData[str(playerId)]['balance'])))
+
+    def assignAdditionalData(self, players):
+        playersWithDetails = OrderedDict()
         for i, player in enumerate(players):
-            player['color'] = PLAYER_COLORS[i]
-        return players
+            playersWithDetails[player['id']] = player
+            playersWithDetails[player['id']]['color'] = PLAYER_COLORS[i]
+            playersWithDetails[player['id']]['number'] = i + 1
+        return playersWithDetails
 
     def getPlayerColor(self, playerId):
-        for player in self.players:
-            if player['id'] == int(playerId):
-                return player['color']
-
-    def getPlayerNumber(self, playerId):
-        for i, player in enumerate(self.players):
-            if player['id'] == int(playerId):
-                return i + 1
+        return self.players[int(playerId)]['color']
 
     def updateGameState(self, data):
         gameData = data['gameData']
         for playerId, playerData in gameData['playersData'].items():
-            self.movePlayerToField(playerData['position'], playerId)
+            self.movePlayerToField(playerData['position'], playerId, playerData['inJail'])
         self.boardMenu.updateMenu(gameData['nextMove'])
+        if 'dice1' in data and 'dice2' in data and 'diceOwner' in data:
+            self.diceArea.updateDice(data['dice1'], data['dice2'], data['diceOwner'])
         self.updateFieldsState(gameData['fields'])
+        self.updateBalanceStats(gameData['playersData'])
 
     def movePlayerToField(self, fieldNo, playerId, inJail=False):
-        playerNo = self.getPlayerNumber(playerId)
+        playerNo = self.players[int(playerId)]['number']
         field = self.widgetFields[fieldNo]
         if playerNo in self.playersRenderedPositions:
             self.playersRenderedPositions[playerNo].removePlayerFromField(playerNo)
@@ -109,3 +119,8 @@ class GameBoard(FloatLayout):
                 widgetField.markBoughtByPlayer(self.getPlayerColor(fieldState['owner']))
                 if isinstance(widgetField, CityField):
                     widgetField.setHouse(fieldState['houses'])
+
+    def updateBalanceStats(self, playersData):
+        for playerId, player in self.players.items():
+            label = self.gameStats.children[player['number'] - 1]
+            label.text = "%s: %d" % (player['name'], playersData[str(playerId)]['balance'])

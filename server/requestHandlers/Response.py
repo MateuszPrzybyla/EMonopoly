@@ -8,15 +8,18 @@ __author__ = 'mateusz'
 
 class ResponseEncoder(JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Response):
-            return {
-                'action': obj.action,
-                'success': obj.success,
-                'message': obj.message,
-                'responseData': obj.responseData
-            }
-        else:
-            return JSONEncoder.default(obj)
+        try:
+            if isinstance(obj, Response):
+                return {
+                    'action': obj.action,
+                    'success': obj.success,
+                    'message': obj.message,
+                    'responseData': obj.responseData
+                }
+            else:
+                return JSONEncoder.default(obj)
+        except Exception as e:
+            pass
 
 
 class Response(object):
