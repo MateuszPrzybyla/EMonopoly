@@ -6,7 +6,7 @@ from threading import Event
 import server.Bidding
 from server.Bidding import Bid
 from server.ClientPlayer import ClientPlayer
-from server.monopoly.ChanceCards import CHANCE_CARDS
+from server.monopoly.ChanceCards import CHANCE_CARDS, COMMUNITY_CARDS
 from server.monopoly.GameField import GameField
 from server.monopoly.GameMove import GameMove
 from server.monopoly.PlayerData import PlayerData
@@ -46,7 +46,8 @@ class MonopolyGame(object):
         self.waitForBidMoveEvent = Event()
         self.lastDice = None
         self.chanceCards = deepcopy(CHANCE_CARDS)
-        random.shuffle(self.chanceCards)
+        self.communityCards = deepcopy(COMMUNITY_CARDS)
+        # random.shuffle(self.chanceCards)
 
     def addStartRequest(self, player):
         alreadyExists = player in self.startRequest
@@ -75,8 +76,8 @@ class MonopolyGame(object):
 
     def doDiceMove(self, playerId, expectedMove):
         player = self.getPlayerById(playerId)
-        # dices = (random.randint(1, 6), random.randint(1, 6), player.name)
-        dices = (5, 5, player.name) if not self.lastDice else (6, 6, player.name)
+        dices = (random.randint(1, 6), random.randint(1, 6), player.name)
+        # dices = (5, 5, player.name) if not self.lastDice else (6, 6, player.name)
         self.lastDice = (dices[0], dices[1])
         diceSum = dices[0] + dices[1]
         newPosition = self.playersData[playerId].movePlayer(diceSum)
@@ -95,19 +96,22 @@ class MonopolyGame(object):
         startPasses = self.playersData[playerId].calculateStartPasses()
         self.playersData[playerId].addBalance(startPasses * MonopolyGame.START_PASS_BONUS)
 
-    def performPlayerOnFieldAction(self, field, playerId, diceResult):
+    def performPlayerOnFieldAction(self, field, playerId, diceResult, fixedCoeff=None):
         player = self.getPlayerById(playerId)
         if field.model.isBuyable() and not field.owner:
             self.nextMoves.append(GameMove.buyOptionMove(player, field.model))
         elif field.owner and field.owner != playerId and not field.mortgage:
             target = self.getPlayerById(field.owner)
-            self.nextMoves.append(GameMove.feeMove(player, target, field, diceResult))
+            self.nextMoves.append(GameMove.feeMove(player, target, field, diceResult, fixedCoeff=fixedCoeff))
         elif field.model.number == GO_TO_JAIL_POSITION:
             self.goToJail(playerId)
         elif field.model.type == FieldType.TAX:
-            self.nextMoves.append(GameMove.feeMove(player, self.getPlayerById(ClientPlayer.BANK_ID), field, diceResult))
+            self.nextMoves.append(GameMove.feeMove(player, self.getPlayerById(ClientPlayer.BANK_ID),
+                                                   field, diceResult, fixedCoeff=fixedCoeff))
         elif field.model.type == FieldType.DRAW_CHANCE:
             self.nextMoves.append(GameMove.draw(player, 'CHANCE'))
+        elif field.model.type == FieldType.DRAW_COMMUNITY:
+            self.nextMoves.append(GameMove.draw(player, 'COMMUNITY'))
 
     def goToJail(self, playerId):
         self.playersData[playerId].goToJail()
@@ -133,14 +137,13 @@ class MonopolyGame(object):
     def doPayFee(self, playerId, moveDetails, expectedMove):
         if moveDetails['pay']:
             expectedMoveData = expectedMove.moveData
-            field = self.fieldsSet[expectedMoveData['fieldNo']]
             fee = expectedMoveData['fee']
             totalFee = fee if expectedMoveData['targetPlayer']['id'] is not ClientPlayer.ALL_ID \
                 else fee * (len(self.players) - 1)
             if self.playersData[playerId].balance < totalFee:
                 player = self.getPlayerById(playerId)
                 targetPlayer = self.getPlayerById(expectedMoveData['targetPlayer']['id'])
-                self.nextMoves.append(GameMove.feeMove(player, targetPlayer, field, sum(self.lastDice)))
+                self.nextMoves.append(GameMove.feeMove(player, targetPlayer, fee=fee, diceResult=sum(self.lastDice)))
             else:
                 if expectedMoveData['targetPlayer']['id'] == ClientPlayer.ALL_ID:
                     targetPlayers = filter(lambda player: player.id != playerId, self.players)
@@ -166,7 +169,7 @@ class MonopolyGame(object):
                 self.addPlayerMove(playerId)
         elif moveDetails['method'] == 'card':
             if playerData.hasJailCard():
-                playerData.quitJail()
+                playerData.jailCards[0].use(self, playerId)
                 self.addPlayerMove(playerId)
             else:
                 self.nextMoves.append(
@@ -204,9 +207,15 @@ class MonopolyGame(object):
 
     def doDrawMove(self, playerId, expectedMove):
         if expectedMove.moveData['type'] == 'CHANCE':
-            card = self.chanceCards.pop()
-            card.handler(self, playerId)
-            self.chanceCards.insert(0, card)
+            deck = self.chanceCards
+        elif expectedMove.moveData['type'] == 'COMMUNITY':
+            deck = self.communityCards
+        if deck:
+            card = deck.pop()
+            print "Player %d draws %s card: %s" % (playerId, expectedMove.moveData['type'], card.text)
+            card.handle(self, playerId)
+            if not card.staysWithPlayer():
+                deck.insert(0, card)
 
     def addPlayerMove(self, playerId):
         player = self.getPlayerById(playerId)

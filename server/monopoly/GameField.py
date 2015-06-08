@@ -17,7 +17,7 @@ class GameField(object):
     def isMonopolized(self):
         return all([field.owner == self.owner for field in self.getAssociatedFields()])
 
-    def getFee(self, diceResult):
+    def getFee(self, diceResult, fixedCoeff=None):
         if self.model.type == FieldType.TAX:
             return self.model.value
         if self.owner is None:
@@ -30,7 +30,13 @@ class GameField(object):
             return 50 * sum(field.owner == self.owner for field in self.getAssociatedFields())
         elif self.model.type == FieldType.WATER_POWER:
             ownedFields = sum([field.owner == self.owner for field in self.getAssociatedFields()])
-            return 4 * diceResult if ownedFields == 1 else 10 * diceResult
+            if fixedCoeff is not None:
+                coeff = fixedCoeff
+            elif ownedFields == 1:
+                coeff = 4
+            else:
+                coeff = 10
+            return coeff * diceResult
         return 0
 
     def getAssociatedFields(self):

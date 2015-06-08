@@ -34,12 +34,18 @@ class GameMove(object):
         })
 
     @staticmethod
-    def feeMove(player, targetPlayer, field=None, diceResult=None, fee=None, fieldNo=None):
-        return GameMove([player], MoveType.FEE, {
-            'targetPlayer': targetPlayer.toDict(),
-            'fieldNo': field.model.number if fieldNo is None else fieldNo,
-            'fee': field.getFee(diceResult) if fee is None else fee
-        })
+    def feeMove(player, targetPlayer, field=None, diceResult=None, fee=None, fixedCoeff=None):
+        if field:
+            return GameMove([player], MoveType.FEE, {
+                'targetPlayer': targetPlayer.toDict(),
+                'fieldNo': field.model.number,
+                'fee': field.getFee(diceResult, fixedCoeff)
+            })
+        else:
+            return GameMove([player], MoveType.FEE, {
+                'targetPlayer': targetPlayer.toDict(),
+                'fee': fee
+            })
 
     @staticmethod
     def inJail(player, turnsInJailLeft, hasJailCard):

@@ -10,6 +10,7 @@ class PlayerData(object):
         self.balance = startBalance
         self.inJailTurns = 0
         self.inJail = False
+        self.jailCards = []
 
     def movePlayer(self, moveSize):
         self.fieldPosition += moveSize
@@ -59,12 +60,18 @@ class PlayerData(object):
             return 0
         return 3 - self.inJailTurns
 
+    def addJailCard(self, card):
+        self.jailCards.append(card)
+
+    def removeJailCard(self, card):
+        self.jailCards.remove(card)
+
+    def hasJailCard(self):
+        return len(self.jailCards) > 0
+
     def quitJail(self):
         self.inJail = False
         self.inJailTurns = 0
-
-    def hasJailCard(self):  # TODO add field
-        return False
 
     def toDict(self):
         return {
@@ -72,5 +79,6 @@ class PlayerData(object):
             'singleMoveChanges': self.singleMoveChanges,
             'singleMoveStart': self.singleMoveStart,
             'balance': self.balance,
-            'inJail': self.inJail
+            'inJail': self.inJail,
+            'hasJailCard': self.hasJailCard()
         }
