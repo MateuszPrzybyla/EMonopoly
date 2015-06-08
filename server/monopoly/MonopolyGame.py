@@ -71,7 +71,7 @@ class MonopolyGame(object):
         if self.state == GameState.ACTIVE:
             return
         self.state = GameState.ACTIVE
-        self.playersData = {player.id: PlayerData(0, 500) for player in self.activePlayers}
+        self.playersData = {player.id: PlayerData(0, 1500) for player in self.activePlayers}
         self.addPlayerMove(self.activePlayers[0].id)
 
     def getHeadMove(self, player, moveType, pop=True):
@@ -273,6 +273,9 @@ class MonopolyGame(object):
             self.goBankrupt(playerId, None, bidCallback)
 
     def notifyPlayerLeft(self, playerId, getGameStateCallback):
+        player = self.getPlayerById(playerId)
+        if player is None:
+            return
         if self.getHeadMove(self.getPlayerById(playerId), MoveType.FEE, pop=False) is not None:
             self.goBankrupt(playerId, None, getGameStateCallback)  # TODO pass fee player
         else:
@@ -350,7 +353,8 @@ class MonopolyGame(object):
             return ClientPlayer.bankPlayer()
         if playerId == ClientPlayer.ALL_ID:
             return ClientPlayer.allPlayer()
-        return self.activePlayers[self.getPlayerNo(playerId)]
+        if playerId is not None:
+            return self.activePlayers[self.getPlayerNo(playerId)]
 
     def getPlayerNo(self, playerId):
         for i, player in enumerate(self.activePlayers):
