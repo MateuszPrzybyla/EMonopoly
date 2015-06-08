@@ -35,7 +35,7 @@ class EMonopolyClientApp(App):
     def __init__(self, **kwargs):
         super(EMonopolyClientApp, self).__init__(**kwargs)
         self.data = dict()
-        self.gameServerClient = GameServerClient('matdeb', 1236, self)
+        self.gameServerClient = GameServerClient('matdeb', 1234, self)
 
     def on_stop(self):
         self.gameServerClient.close()

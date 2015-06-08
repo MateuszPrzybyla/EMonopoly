@@ -10,7 +10,7 @@ from server.monopoly.ChanceCards import CHANCE_CARDS
 from server.monopoly.GameField import GameField
 from server.monopoly.GameMove import GameMove
 from server.monopoly.PlayerData import PlayerData
-from utils.eMonopoly import GAME_FIELDS, FieldType
+from utils.eMonopoly import GAME_FIELDS, FieldType, MoveType
 
 
 __author__ = 'mateusz'
@@ -64,9 +64,9 @@ class MonopolyGame(object):
             return
         self.state = GameState.ACTIVE
         self.playersData = {player.id: PlayerData(0, 1500) for player in self.players}
-        self.addPlayerMove(0)
+        self.addPlayerMove(self.players[0].id)
 
-    def acceptMove(self, player, moveType):
+    def popMove(self, player, moveType):
         expectedMove = self.nextMoves[-1]
         # niektore ruchy moga byc wykonane w dowolnym momencie
         # stawianie budynkow, sprzedaz nieruchomosci, zastaw hipoteczny, handel z innymi
@@ -74,16 +74,17 @@ class MonopolyGame(object):
             return self.nextMoves.pop()
 
     def doDiceMove(self, playerId, expectedMove):
-        playerNo = self.getPlayerNo(playerId)
-        dices = (random.randint(1, 6), random.randint(1, 6), self.players[playerNo].name)
+        player = self.getPlayerById(playerId)
+        # dices = (random.randint(1, 6), random.randint(1, 6), player.name)
+        dices = (5, 5, player.name) if not self.lastDice else (6, 6, player.name)
         self.lastDice = (dices[0], dices[1])
         diceSum = dices[0] + dices[1]
         newPosition = self.playersData[playerId].movePlayer(diceSum)
         if dices[0] == dices[1]:
-            if expectedMove.moveData['roll'] < 3 and newPosition != GO_TO_JAIL_POSITION:
-                self.nextMoves.append(GameMove.diceMove(self.players[playerNo], expectedMove.moveData['roll'] + 1))
+            if expectedMove.moveData['roll'] < 3:
+                self.nextMoves.append(GameMove.diceMove(player, expectedMove.moveData['roll'] + 1))
             else:
-                self.playersData[playerId].goToJail()
+                self.goToJail(playerId)
                 return dices
         else:
             self.checkStartBonus(playerId)
@@ -95,18 +96,22 @@ class MonopolyGame(object):
         self.playersData[playerId].addBalance(startPasses * MonopolyGame.START_PASS_BONUS)
 
     def performPlayerOnFieldAction(self, field, playerId, diceResult):
-        playerNo = self.getPlayerNo(playerId)
+        player = self.getPlayerById(playerId)
         if field.model.isBuyable() and not field.owner:
-            self.nextMoves.append(GameMove.buyOptionMove(self.players[playerNo], field.model))
+            self.nextMoves.append(GameMove.buyOptionMove(player, field.model))
         elif field.owner and field.owner != playerId and not field.mortgage:
-            targetNo = self.getPlayerNo(field.owner)
-            self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.players[targetNo], field, diceResult))
+            target = self.getPlayerById(field.owner)
+            self.nextMoves.append(GameMove.feeMove(player, target, field, diceResult))
         elif field.model.number == GO_TO_JAIL_POSITION:
-            self.playersData[playerId].goToJail()
+            self.goToJail(playerId)
         elif field.model.type == FieldType.TAX:
-            self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.bankPlayer, field, diceResult))
+            self.nextMoves.append(GameMove.feeMove(player, self.getPlayerById(ClientPlayer.BANK_ID), field, diceResult))
         elif field.model.type == FieldType.DRAW_CHANCE:
-            self.nextMoves.append(GameMove.draw(self.players[playerNo], 'CHANCE'))
+            self.nextMoves.append(GameMove.draw(player, 'CHANCE'))
+
+    def goToJail(self, playerId):
+        self.playersData[playerId].goToJail()
+        self.popMove(self.getPlayerById(playerId), MoveType.DICE)
 
     def estateBidEnded(self, bidCallback):
         def combinedCallback(biddingResult):
@@ -114,6 +119,7 @@ class MonopolyGame(object):
             biddingResult.field.owner = winner.id
             self.playersData[winner.id].addBalance(-biddingResult.winningBid.value)
             bidCallback(self)
+
         return combinedCallback
 
     def doBuyEstate(self, playerId, moveDetails, bidCallback):
@@ -129,37 +135,44 @@ class MonopolyGame(object):
             expectedMoveData = expectedMove.moveData
             field = self.fieldsSet[expectedMoveData['fieldNo']]
             fee = expectedMoveData['fee']
-            if self.playersData[playerId].balance < fee:
-                playerNo = self.getPlayerNo(playerId)
-                targetNo = self.getPlayerNo(field.owner)
-                self.nextMoves.append(GameMove.feeMove(self.players[playerNo], self.players[targetNo], field))
+            totalFee = fee if expectedMoveData['targetPlayer']['id'] is not ClientPlayer.ALL_ID \
+                else fee * (len(self.players) - 1)
+            if self.playersData[playerId].balance < totalFee:
+                player = self.getPlayerById(playerId)
+                targetPlayer = self.getPlayerById(expectedMoveData['targetPlayer']['id'])
+                self.nextMoves.append(GameMove.feeMove(player, targetPlayer, field, sum(self.lastDice)))
             else:
-                self.playersData[playerId].addBalance(-fee)
-                if expectedMoveData['targetPlayer']['id'] != ClientPlayer.BANK_ID:
-                    self.playersData[expectedMoveData['targetPlayer']['id']].addBalance(fee)
+                if expectedMoveData['targetPlayer']['id'] == ClientPlayer.ALL_ID:
+                    targetPlayers = filter(lambda player: player.id != playerId, self.players)
+                else:
+                    targetPlayers = [self.getPlayerById(expectedMoveData['targetPlayer']['id'])]
+                self.playersData[playerId].addBalance(-fee * len(targetPlayers))
+                for targetPlayer in targetPlayers:
+                    if targetPlayer.id > 0:
+                        self.playersData[targetPlayer.id].addBalance(fee)
         else:
             pass  # TODO - go bankrupt
 
     def doJailMove(self, playerId, moveDetails):
-        playerNo = self.getPlayerNo(playerId)
+        player = self.getPlayerById(playerId)
         playerData = self.playersData[playerId]
         if moveDetails['method'] == 'pay' and playerData.turnsInJailLeft() > 0:
             if playerData.balance < JAIL_QUIT_FEE:
                 self.nextMoves.append(
-                    GameMove.inJail(self.players[playerNo], playerData.turnsInJailLeft(), playerData.hasJailCard()))
+                    GameMove.inJail(player, playerData.turnsInJailLeft(), playerData.hasJailCard()))
             else:
                 playerData.addBalance(-JAIL_QUIT_FEE)
                 playerData.quitJail()
-                self.addPlayerMove(playerNo)
+                self.addPlayerMove(playerId)
         elif moveDetails['method'] == 'card':
             if playerData.hasJailCard():
                 playerData.quitJail()
-                self.addPlayerMove(playerNo)
+                self.addPlayerMove(playerId)
             else:
                 self.nextMoves.append(
-                    GameMove.inJail(self.players[playerNo], playerData.turnsInJailLeft(), playerData.hasJailCard()))
+                    GameMove.inJail(player, playerData.turnsInJailLeft(), playerData.hasJailCard()))
         elif moveDetails['method'] == 'dice':
-            dices = (random.randint(1, 6), random.randint(1, 6), self.players[playerNo].name)
+            dices = (random.randint(1, 6), random.randint(1, 6), player.name)
             self.lastDice = (dices[0], dices[1])
             if dices[0] == dices[1] or playerData.turnsInJailLeft() == 0:
                 playerData.quitJail()
@@ -174,7 +187,7 @@ class MonopolyGame(object):
         nextToRoll = (playerNo + 1) % self.playersNumber
         self.playersData[playerId].resetMove()
         self.playersData[playerId].countJailTurns()
-        self.addPlayerMove(nextToRoll)
+        self.addPlayerMove(self.players[nextToRoll].id)
 
     def startFieldBidding(self, field, onBiddingComplete):
         self.biddingManager = server.Bidding.BiddingManager(self.players, self.playersData, self.nextMoves, field,
@@ -182,16 +195,12 @@ class MonopolyGame(object):
                                                             self.waitForBidMoveEvent)
         self.waitForBidMoveEvent.clear()
         self.biddingManager.start()
-        print "Start bidding - wait"
         self.waitForBidMoveEvent.wait()
-        print "Start bidding - wait finished"
 
     def doBidMove(self, playerId, moveDetails):
         self.waitForBidMoveEvent.clear()
-        self.biddingQueue.put(Bid(self.players[self.getPlayerNo(playerId)], moveDetails['value']))
-        print "Bid move - wait"
+        self.biddingQueue.put(Bid(self.getPlayerById(playerId), moveDetails['value']))
         self.waitForBidMoveEvent.wait()
-        print "Bid move - wait finished"
 
     def doDrawMove(self, playerId, expectedMove):
         if expectedMove.moveData['type'] == 'CHANCE':
@@ -199,15 +208,22 @@ class MonopolyGame(object):
             card.handler(self, playerId)
             self.chanceCards.insert(0, card)
 
-    def addPlayerMove(self, playerNo):
-        playerId = self.players[playerNo].id
-        self.nextMoves.append(GameMove.endMove(self.players[playerNo]))
+    def addPlayerMove(self, playerId):
+        player = self.getPlayerById(playerId)
+        self.nextMoves.append(GameMove.endMove(player))
         playerData = self.playersData[playerId]
         if playerData.isInJail():
             self.nextMoves.append(
-                GameMove.inJail(self.players[playerNo], playerData.turnsInJailLeft(), playerData.hasJailCard()))
+                GameMove.inJail(player, playerData.turnsInJailLeft(), playerData.hasJailCard()))
         else:
-            self.nextMoves.append(GameMove.diceMove(self.players[playerNo]))
+            self.nextMoves.append(GameMove.diceMove(player))
+
+    def getPlayerById(self, playerId):
+        if playerId == ClientPlayer.BANK_ID:
+            return ClientPlayer.bankPlayer()
+        if playerId == ClientPlayer.ALL_ID:
+            return ClientPlayer.allPlayer()
+        return self.players[self.getPlayerNo(playerId)]
 
     def getPlayerNo(self, playerId):
         for i, player in enumerate(self.players):

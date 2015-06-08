@@ -34,11 +34,11 @@ class GameMove(object):
         })
 
     @staticmethod
-    def feeMove(player, targetPlayer, field, diceResult):
+    def feeMove(player, targetPlayer, field=None, diceResult=None, fee=None, fieldNo=None):
         return GameMove([player], MoveType.FEE, {
             'targetPlayer': targetPlayer.toDict(),
-            'fieldNo': field.model.number,
-            'fee': field.getFee(diceResult)
+            'fieldNo': field.model.number if fieldNo is None else fieldNo,
+            'fee': field.getFee(diceResult) if fee is None else fee
         })
 
     @staticmethod

@@ -38,7 +38,7 @@ class GameMoveRequestHandler(RequestHandler):
             return NotAPlayerResponse()
         monopolyGame = joinedRoom.game
         action = json.loads(rawMsg)['action'][5:]
-        expectedMove = monopolyGame.acceptMove(clientPlayer, action)
+        expectedMove = monopolyGame.popMove(clientPlayer, action)
         if not expectedMove:
             return NotEligibleForMove()
         diceResult = None
