@@ -75,8 +75,18 @@ class GameMove(object):
         })
 
     @staticmethod
+    def payDebt(player):
+        return GameMove([player], MoveType.DEBT)
+
+    @staticmethod
     def endMove(player):
         return GameMove([player], MoveType.END)
+
+    @staticmethod
+    def winMove(players, winner):
+        return GameMove(players, MoveType.WIN, {
+            'winner': winner.toDict()
+        })
 
     def __str__(self):
         return "TYPE: %s, PLAYERS: %s, MOVE_DATA: %s" % (

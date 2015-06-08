@@ -42,6 +42,12 @@ class GameMoveRequest(Request):
         return GameMoveRequest(MoveType.DRAW)
 
     @staticmethod
+    def payDebt(paid):
+        return GameMoveRequest(MoveType.DEBT, {
+            'paid': paid
+        })
+
+    @staticmethod
     def buyHouseMove(fieldNo):
         return GameMoveRequest(MoveType.HOUSE, {
             'action': 'buy',

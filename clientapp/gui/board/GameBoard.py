@@ -124,4 +124,7 @@ class GameBoard(BoxLayout):
     def updateBalanceStats(self, playersData):
         for playerId, player in self.players.items():
             label = self.gameStats.children[player['number'] - 1]
-            label.text = "%s: %d" % (player['name'], playersData[str(playerId)]['balance'])
+            if str(playerId) in playersData:
+                label.text = "%s: %d" % (player['name'], playersData[str(playerId)]['balance'])
+            else:
+                label.text = "%s: BROKEN" % player['name']

@@ -15,13 +15,13 @@ class GameStartResponseHandler(object):
     def handleRequest(self, msg, jsonMsg, gameServerSocket):
         if msg['success'] and 'responseData' in msg:
             self.chatController.appendMessage('Player %s wants to start a game' % msg['responseData']['player'], '', '',
-                                              infoMessage=True)
+                                              info_message=True)
             if msg['responseData']['gameStarted']:
                 self.gameWidget.clear_widgets()
                 boardWidget = GameBoard()
                 boardWidget.initialize(msg['responseData'])
                 self.gameWidget.add_widget(boardWidget)
-                self.chatController.appendMessage('Game is on!', '', '', infoMessage=True)
+                self.chatController.appendMessage('Game is on!', '', '', info_message=True)
             else:
                 self.gameWidget.startMsgLabel.text = \
                     "Waiting for all players to start... (%d left)" % msg['responseData']['playersLeft']

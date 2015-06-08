@@ -18,6 +18,7 @@ __author__ = 'mateusz'
 class RequestHandlerDispatcher(object):
     def __init__(self, gameServer):
         self.gameServer = gameServer
+        self.gameMoveHandler = GameMoveRequestHandler(self.gameServer)
         self.handlersMap = {
             'JOIN_SERVER': JoinServerRequestHandler(self.gameServer),
             'LEAVE_SERVER': LeaveServerRequestHandler(self.gameServer),
@@ -25,10 +26,9 @@ class RequestHandlerDispatcher(object):
             'CREATE_ROOM': CreateRoomRequestHandler(self.gameServer),
             'GET_ROOMS': GetRoomsRequestHandler(self.gameServer),
             'JOIN_ROOM': JoinRoomRequestHandler(self.gameServer),
-            'QUIT_ROOM': QuitRoomRequestHandler(self.gameServer),
-            'START_GAME': GameStartRequestHandler(self.gameServer)
+            'START_GAME': GameStartRequestHandler(self.gameServer),
+            'QUIT_ROOM': QuitRoomRequestHandler(self.gameServer, self.gameMoveHandler),
         }
-        self.gameMoveHandler = GameMoveRequestHandler(self.gameServer)
         self.defaultHandler = UnknownRequestHandler()
 
     def handle(self, jsonMsg, clientSocket):

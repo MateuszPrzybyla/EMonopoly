@@ -18,16 +18,16 @@ class QuitRoomResponseHandler(object):
                 self.app.changeScreen('gameRoom')
             else:
                 if msg['responseData']['isRoomDead']:
-                    popupLayout = BoxLayout(orientation='vertical')
-                    popup = Popup(content=popupLayout)
-                    popupLayout.add_widget(Label(text='Room has been closed by the owner'))
-                    closeButton = Button(text='Close')
-                    closeButton.bind(on_press=popup.dismiss)
-                    popupLayout.add_widget(closeButton)
+                    popup_layout = BoxLayout(orientation='vertical')
+                    popup = Popup(content=popup_layout)
+                    popup_layout.add_widget(Label(text='Room has been closed by the owner'))
+                    close_button = Button(text='Close')
+                    close_button.bind(on_press=popup.dismiss)
+                    popup_layout.add_widget(close_button)
                     popup.bind(on_dismiss=lambda x: self.app.changeScreen('gameRoom'))
                     popup.open()
                 else:
-                    self.chatController.appendMessage('Player %s has left the room' % msg['responseData']['player'], '', '',
-                                                  infoMessage=True)
+                    self.chatController.appendMessage('Player %s has left the room' % msg['responseData']['player'],
+                                                      '', '', info_message=True)
         else:
             print "QUIT_ROOM failed"

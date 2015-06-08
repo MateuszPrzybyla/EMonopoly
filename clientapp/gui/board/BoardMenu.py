@@ -45,8 +45,12 @@ class BoardMenuWrapper(BoxLayout):
             self.syncMenu.add_widget(Bidding(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.DRAW:
             self.syncMenu.add_widget(Draw(nextMove['moveData']))
+        elif nextMove['moveType'] == MoveType.DEBT:
+            self.syncMenu.add_widget(Debt())
         elif nextMove['moveType'] == MoveType.END:
             self.syncMenu.add_widget(EndMove())
+        elif nextMove['moveType'] == MoveType.WIN:
+            self.syncMenu.add_widget(GameEnd(nextMove['moveData']))
         self.asyncMenu.updateMenu(gameData)
 
 
@@ -59,6 +63,14 @@ class BoardMenu(BoxLayout):
 
 class WaitForMove(BoardMenu):
     pass
+
+
+class GameEnd(BoardMenu):
+    winnerLabel = ObjectProperty()
+
+    def __init__(self, moveData, **kwargs):
+        super(GameEnd, self).__init__(**kwargs)
+        self.winnerLabel.text = "Winner: %s" % moveData['winner']['name']
 
 
 class RollTheDice(BoardMenu):
@@ -154,6 +166,14 @@ class Draw(BoardMenu):
 
     def draw(self):
         self.gameServerClient.send(GameMoveRequest.drawMove())
+
+
+class Debt(BoardMenu):
+    def paid(self):
+        self.gameServerClient.send(GameMoveRequest.payDebt(True))
+
+    def goBankrupt(self):
+        self.gameServerClient.send(GameMoveRequest.payDebt(False))
 
 
 class EndMove(BoardMenu):

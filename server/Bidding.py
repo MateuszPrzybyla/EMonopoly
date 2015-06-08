@@ -20,12 +20,13 @@ class BiddingResult(object):
 
 
 class BiddingManager(Thread):
-    def __init__(self, players, playersData, movesStack, field, resultCallback, bidQueue, bidTimeout,
+    def __init__(self, players, playersData, movesStack, movesLock, field, resultCallback, bidQueue, bidTimeout,
                  waitForBidMoveEvent):
         super(BiddingManager, self).__init__()
         self.players = players
         self.playersData = playersData
         self.movesStack = movesStack
+        self.movesLock = movesLock
         self.field = field
         self.bidTimeout = bidTimeout
         self.waitForBidMoveEvent = waitForBidMoveEvent

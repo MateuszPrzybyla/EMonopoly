@@ -16,15 +16,18 @@ class QuitRoomResponse(Response):
 
 
 class QuitRoomRequestHandler(RequestHandler):
-    def __init__(self, gameServer):
+    def __init__(self, gameServer, gameMoveHandler):
         super(QuitRoomRequestHandler, self).__init__()
         self.gameServer = gameServer
+        self.gameMoveHandler = gameMoveHandler
 
     def handle(self, msg, rawMsg, clientSocket, clientPlayer, joinedRoom):
         if clientPlayer:
             room = clientPlayer.joinedRoom
             if not room:
                 return QuitRoomResponse(False, msg="You are not in any room")
+            clientPlayer.joinedRoom.game.notifyPlayerLeft(
+                clientPlayer.id, self.gameMoveHandler.getGameStateCallback(clientPlayer.joinedRoom))
             if room.owner == clientPlayer:
                 self.gameServer.notifyCloseRoom(clientPlayer, room)
                 self.gameServer.broadcastAllRoom(room, QuitRoomResponse(True, "", clientPlayer, True))

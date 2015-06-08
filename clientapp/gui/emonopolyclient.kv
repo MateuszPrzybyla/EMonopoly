@@ -454,6 +454,12 @@
     Label:
         text: "Wait for your move..."
 
+<GameEnd@BoardMenu>:
+    winnerLabel: winnerLabel
+    Label:
+        id: winnerLabel
+        text: ""
+
 <RollTheDice@BoardMenu>:
     Button:
         text: "Roll the dice"
@@ -541,6 +547,16 @@
     Button:
         text: "Draw"
         on_press: root.draw()
+
+<Debt@BoardMenu>:
+    Label:
+        text: "Pay your debts"
+    Button:
+        text: "Paid"
+        on_press: root.paid()
+    Button:
+        text: "I'm broken"
+        on_press: root.goBankrupt()
 
 <EndMove@BoardMenu>:
     Button:

@@ -109,6 +109,7 @@ class MoveType(object):
     DRAW = 'DRAW'
     BID = 'BID'
     END = 'END'
-    BROKEN = 'BROKEN'
+    DEBT = 'DEBT'
     HOUSE = 'HOUSE'
     MORTGAGE = 'MORTGAGE'
+    WIN = 'WIN'

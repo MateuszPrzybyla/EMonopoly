@@ -46,9 +46,10 @@ class GameServer(object):
 
     def notifyClientDisconnected(self, client):
         client.socket.close()
-        if self.connectedClients[client]:
+        if client in self.connectedClients and self.connectedClients[client]:
             self.clearPlayerData(self.connectedClients[client])
-        self.connectedClients.pop(client)
+        if client in self.connectedClients:
+            self.connectedClients.pop(client)
         print "Client %s disconnected. Connected clients: %d" % (client.address, len(self.connectedClients))
 
     def notifyNewPlayer(self, nick, clientSocket):
@@ -73,7 +74,7 @@ class GameServer(object):
         if clientPlayer in self.rooms:
             self.rooms.pop(clientPlayer)
         self.players.pop(clientPlayer.name)
-        if clientPlayer.joinedRoom:
+        if clientPlayer.joinedRoom and clientPlayer in clientPlayer.joinedRoom.players:
             clientPlayer.joinedRoom.players.remove(clientPlayer)
 
     def notifyNewRoom(self, clientPlayer, room):

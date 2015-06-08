@@ -36,6 +36,7 @@ class JoinRoomRequestHandler(RequestHandler):
                 if not room:
                     return JoinRoomResponse(False, msg="Room not found")
                 room.players.append(clientPlayer)
+                room.game.allPlayers.append(clientPlayer)
                 clientPlayer.joinedRoom = room
                 self.gameServer.broadcastAllRoom(room, JoinRoomResponse(True, player=clientPlayer, room=room))
         else:

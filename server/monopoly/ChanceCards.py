@@ -55,7 +55,7 @@ def goToJail(card, game, playerId):
 def payEachPlayer(fee):
     def handler(card, game, playerId):
         player = game.getPlayerById(playerId)
-        game.nextMoves.append(GameMove.feeMove(player, ClientPlayer.allPlayer(), fee=fee))
+        game.addMove(GameMove.feeMove(player, ClientPlayer.allPlayer(), fee=fee))
 
     return handler
 

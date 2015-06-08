@@ -14,6 +14,6 @@ class JoinRoomHandler(object):
                 self.app.changeScreen('singleRoomScreen', msg['responseData']['room'])
             else:
                 self.chatController.appendMessage('Player %s has joined the room' % msg['responseData']['player'], '',
-                                                  '', infoMessage=True)
+                                                  '', info_message=True)
         else:
             print "JOIN_ROOM failed"
