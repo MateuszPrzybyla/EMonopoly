@@ -4,12 +4,12 @@ from server.monopoly.GameMove import GameMove
 __author__ = 'mateusz'
 
 
-def positionChange(targetPosition=0, change=0):
+def positionChange(targetPosition=None, change=None):
     def handler(card, game, playerId):
         playerData = game.playersData[playerId]
-        if targetPosition:
+        if targetPosition is not None:
             playerData.movePlayerToField(targetPosition)
-        elif change:
+        elif change is not None:
             playerData.movePlayer(change)
         else:
             return

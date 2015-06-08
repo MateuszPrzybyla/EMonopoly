@@ -66,7 +66,7 @@ class MonopolyGame(object):
         if self.state == GameState.ACTIVE:
             return
         self.state = GameState.ACTIVE
-        self.playersData = {player.id: PlayerData(0, 1500) for player in self.activePlayers}
+        self.playersData = {player.id: PlayerData(0, 500) for player in self.activePlayers}
         self.addPlayerMove(self.activePlayers[0].id)
 
     def popMove(self, player, moveType):
@@ -136,7 +136,7 @@ class MonopolyGame(object):
         else:
             self.startFieldBidding(field, self.estateBidEnded(bidCallback))
 
-    def doPayFee(self, playerId, moveDetails, expectedMove):
+    def doPayFee(self, playerId, moveDetails, expectedMove, bidCallback):
         if moveDetails['pay']:
             expectedMoveData = expectedMove.moveData
             fee = expectedMoveData['fee']
@@ -156,7 +156,7 @@ class MonopolyGame(object):
                     if targetPlayer.id > 0:
                         self.playersData[targetPlayer.id].addBalance(fee)
         else:
-            self.goBankrupt(playerId, None)
+            self.goBankrupt(playerId, None, bidCallback)
 
     def doJailMove(self, playerId, moveDetails):
         player = self.getPlayerById(playerId)
@@ -222,19 +222,19 @@ class MonopolyGame(object):
 
     def doHouseMove(self, playerId, moveDetails):
         if moveDetails['action'] == 'buy':
-            self.doBuyHouse(playerId, moveDetails['fieldNo'], moveDetails['houseLevel'])
+            self.doBuyHouse(playerId, moveDetails['fieldNo'])
         elif moveDetails['action'] == 'sell':
             self.doSellHouse(playerId, moveDetails['fieldNo'])
 
-    def doBuyHouse(self, playerId, fieldNo, houses):
+    def doBuyHouse(self, playerId, fieldNo):
         field = self.fieldsSet[fieldNo]
-        if not field.canBuildHouse(playerId, houses):
+        if not field.canBuildHouse(playerId):
             return
-        cost = field.getHouseCost(houses)
-        if self.playersData[playerId].balance < cost:
+        cost = field.getHouseCost()
+        if cost == 0 or self.playersData[playerId].balance < cost:
             return
         self.playersData[playerId].addBalance(-cost)
-        field.houses = houses
+        field.houses += 1
 
     def doSellHouse(self, playerId, fieldNo):
         field = self.fieldsSet[fieldNo]
@@ -243,14 +243,51 @@ class MonopolyGame(object):
         soldValue = field.sellHouse()
         self.playersData[playerId].addBalance(soldValue)
 
-    def goBankrupt(self, playerId, possessionTarget):
-        return
+    def playerBankruptBiddingComplete(self, playerId, bidCallback):
+        def combinedCallback(biddingResult):
+            winner = biddingResult.winningBid.owner
+            biddingResult.field.owner = winner.id
+            self.playersData[winner.id].addBalance(-biddingResult.winningBid.value)
+            playersFields = filter(lambda field: field.owner == playerId, self.fieldsSet)
+            if len(playersFields) > 0:
+                self.startFieldBidding(playersFields[0], self.playerBankruptBiddingComplete(playerId, bidCallback))
+            bidCallback(self)
+
+        return combinedCallback
+
+    def goBankrupt(self, playerId, possessionTarget, bidCallback):
         soldValue = 0
-        for field in filter(lambda field: field.owner == playerId, self.fieldsSet):
+        playersFields = filter(lambda field: field.owner == playerId, self.fieldsSet)
+        for field in playersFields:
             soldValue += field.clearHouses()
         self.playersData[playerId].addBalance(soldValue)
         self.activePlayers = [player for player in self.activePlayers if player.id != playerId]
+        if len(playersFields) > 0:
+            self.startFieldBidding(playersFields[0], self.playerBankruptBiddingComplete(playerId, bidCallback))
 
+    def doMortgageMove(self, playerId, moveDetails):
+        if moveDetails['action'] == 'lift':
+            self.doMortgageLift(playerId, moveDetails['fieldNo'])
+        elif moveDetails['action'] == 'sell':
+            self.doMortgageSell(playerId, moveDetails['fieldNo'])
+
+    def doMortgageLift(self, playerId, fieldNo):
+        field = self.fieldsSet[fieldNo]
+        if not field.canLiftMortgage(playerId):
+            return
+        mortgageValue = field.getMortgageBuyValue()
+        if self.playersData[playerId].balance < mortgageValue:
+            return
+        field.mortgage = False
+        self.playersData[playerId].addBalance(-mortgageValue)
+
+    def doMortgageSell(self, playerId, fieldNo):
+        field = self.fieldsSet[fieldNo]
+        if not field.canDoMortgage(playerId):
+            return
+        mortgageValue = field.getMortgageSellValue()
+        field.mortgage = True
+        self.playersData[playerId].addBalance(mortgageValue)
 
     def addPlayerMove(self, playerId):
         player = self.getPlayerById(playerId)

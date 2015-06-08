@@ -551,6 +551,8 @@
     mainScreen: mainScreen
     buyHouseScreen: buyHouseScreen
     sellHouseScreen: sellHouseScreen
+    mortgageSellScreen: mortgageSellScreen
+    mortgageLiftScreen: mortgageLiftScreen
     Screen:
         id: mainScreen
         name: "mainScreen"
@@ -564,50 +566,24 @@
                 on_press: root.goSellHouse()
             Button:
                 text: "Mortgage"
+                on_press: root.goMortgageSell()
+            Button:
+                text: "Lift the mortgage"
+                on_press: root.goMortgageLift()
     BuyHouseScreen:
         id: buyHouseScreen
         name: "buyHouseScreen"
     SellHouseScreen:
         id: sellHouseScreen
         name: "sellHouseScreen"
+    MortgageSellScreen:
+        id: mortgageSellScreen
+        name: "mortgageSellScreen"
+    MortgageLiftScreen:
+        id: mortgageLiftScreen
+        name: "mortgageLiftScreen"
 
-<BuyHouseScreen@Screen>:
-    fieldsList: fieldsList
-    selectedField: selectedField
-    houseLevel: houseLevel
-    BoxLayout:
-        orientation: "vertical"
-        Button:
-            text: "Back"
-            height: 30
-            size_hint: (1, None)
-            on_press: root.goBack()
-        Label:
-            text: "Buy house"
-            height: 40
-            size_hint: (1, None)
-        GridLayout:
-            cols: 6
-            rows: 4
-            id: fieldsList
-        Label:
-            id: selectedField
-            text: ""
-            height: 40
-            size_hint: (1, None)
-        TextInput:
-            id: houseLevel
-            multiline: False
-            font_size: '20dp'
-            height: 40
-            size_hint: (1, None)
-        Button:
-            text: "BUY"
-            height: 40
-            size_hint: (1, None)
-            on_press: root.doBuy()
-
-<SellHouseScreen@Screen>:
+<AsyncMenuScreen@Screen>:
     fieldsList: fieldsList
     selectedField: selectedField
     BoxLayout:
@@ -618,7 +594,7 @@
             size_hint: (1, None)
             on_press: root.goBack()
         Label:
-            text: "Sell house"
+            text: root.screenTitle
             height: 40
             size_hint: (1, None)
         GridLayout:
@@ -631,10 +607,10 @@
             height: 40
             size_hint: (1, None)
         Button:
-            text: "SELL"
+            text: root.buttonText
             height: 40
             size_hint: (1, None)
-            on_press: root.doSell()
+            on_press: root.execute()
 
 <DiceArea>:
     orientation: "vertical"

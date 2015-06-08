@@ -46,19 +46,19 @@ class GameField(object):
             return filter(lambda field: field.model.color == self.model.color, self.fieldSet)
         return []
 
-    def canBuildHouse(self, playerId, houseLevel, checkOwning=False):
-        if self.model.type != FieldType.CITY or self.houses == 5 or houseLevel > 5:
+    def canBuildHouse(self, playerId, houseChange=lambda houses: houses + 1, checkOwning=True):
+        if self.model.type != FieldType.CITY or self.houses == 5 or self.houses >= 5:
             return False
         associatedFields = self.getAssociatedFields()
         if checkOwning and any(field.owner != playerId or field.mortgage for field in associatedFields):
             return False
-        houseLevels = [houseLevel if field == self else field.houses for field in associatedFields]
+        houseLevels = [houseChange(field.houses) if field == self else field.houses for field in associatedFields]
         return max(houseLevels) - min(houseLevels) < 2
 
     def canSellHouse(self, playerId):
         if self.houses == 0:
             return False
-        return self.canBuildHouse(playerId, self.houses - 1, checkOwning=False)
+        return self.canBuildHouse(playerId, lambda houses: houses - 1, checkOwning=False)
 
     def sellHouse(self):
         if self.houses == 0:
@@ -67,16 +67,29 @@ class GameField(object):
         self.houses -= 1
         return soldValue
 
-    def getHouseCost(self, houseLevel):
-        if houseLevel <= self.houses:
+    def getHouseCost(self):
+        if self.houses >= 5:
             return 0
-        return self.model.houseCost * (houseLevel - self.houses)
+        return self.model.houseCost
 
     def clearHouses(self):
         value = 0
         while self.houses > 0:
             value += self.sellHouse()
         return value
+
+    def canDoMortgage(self, playerId):
+        return self.owner == playerId and not self.mortgage and \
+               all([field.houses == 0 for field in self.getAssociatedFields()])
+
+    def getMortgageSellValue(self):
+        return int(self.model.value * 0.5)
+
+    def canLiftMortgage(self, playerId):
+        return self.owner == playerId and self.mortgage
+
+    def getMortgageBuyValue(self):
+        return int(1.1 * self.getMortgageSellValue())
 
     def toDictStateOnly(self):
         return {

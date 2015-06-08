@@ -30,6 +30,8 @@ class GameMoveRequestHandler(RequestHandler):
 
     def getBidEndCallback(self, room):
         def callback(game):
+            print "bid end callback!"
+            print "Game moves queue (%d): %s" % (len(game.nextMoves), [str(move) for move in reversed(game.nextMoves)])
             self.gameServer.broadcastAllRoom(room, GameStateResponse(True, "", game.toDictStateOnly()))
         return callback
 
@@ -47,7 +49,7 @@ class GameMoveRequestHandler(RequestHandler):
         elif action == MoveType.BUY:
             monopolyGame.doBuyEstate(clientPlayer.id, msg, self.getBidEndCallback(joinedRoom))
         elif action == MoveType.FEE:
-            monopolyGame.doPayFee(clientPlayer.id, msg, expectedMove)
+            monopolyGame.doPayFee(clientPlayer.id, msg, expectedMove, self.getBidEndCallback(joinedRoom))
         elif action == MoveType.JAIL:
             diceResult = monopolyGame.doJailMove(clientPlayer.id, msg)
         elif action == MoveType.BID:
@@ -58,10 +60,12 @@ class GameMoveRequestHandler(RequestHandler):
             monopolyGame.doEndMove(clientPlayer.id)
         elif action == MoveType.HOUSE:
             monopolyGame.doHouseMove(clientPlayer.id, msg)
+        elif action == MoveType.MORTGAGE:
+            monopolyGame.doMortgageMove(clientPlayer.id, msg)
         print "Game moves queue (%d): %s" % (
             len(monopolyGame.nextMoves), [str(move) for move in reversed(monopolyGame.nextMoves)])
         self.gameServer.broadcastAllRoom(joinedRoom,
                                          GameStateResponse(True, "", monopolyGame.toDictStateOnly(), diceResult))
 
     def isAsync(self, action):
-        return action in ['HOUSE']
+        return action in [MoveType.HOUSE, MoveType.MORTGAGE]

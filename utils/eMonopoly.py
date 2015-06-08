@@ -111,3 +111,4 @@ class MoveType(object):
     END = 'END'
     BROKEN = 'BROKEN'
     HOUSE = 'HOUSE'
+    MORTGAGE = 'MORTGAGE'

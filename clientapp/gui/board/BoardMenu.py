@@ -1,5 +1,5 @@
 from kivy.app import App
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -165,6 +165,8 @@ class AsyncMenu(ScreenManager):
     mainScreen = ObjectProperty()
     buyHouseScreen = ObjectProperty()
     sellHouseScreen = ObjectProperty()
+    mortgageSellScreen = ObjectProperty()
+    mortgageLiftScreen = ObjectProperty()
 
     def __init__(self, **kwargs):
         super(AsyncMenu, self).__init__(**kwargs)
@@ -179,6 +181,10 @@ class AsyncMenu(ScreenManager):
                        fieldData['owner'] == playerId and appFields[int(fieldNo)]['type'] == FieldType.CITY]
         self.buyHouseScreen.addFields(ownedCities)
         self.sellHouseScreen.addFields(ownedCities)
+        ownedProperties = [fieldNo for (fieldNo, fieldData) in gameData['fields'].items() if
+                           fieldData['owner'] == playerId]
+        self.mortgageSellScreen.addFields(ownedProperties)
+        self.mortgageLiftScreen.addFields(ownedProperties)
 
     def loadMainScreen(self):
         self.current = self.mainScreen.name
@@ -189,67 +195,86 @@ class AsyncMenu(ScreenManager):
     def goSellHouse(self):
         self.current = self.sellHouseScreen.name
 
+    def goMortgageSell(self):
+        self.current = self.mortgageSellScreen.name
 
-class BuyHouseScreen(Screen):
+    def goMortgageLift(self):
+        self.current = self.mortgageLiftScreen.name
+
+
+class AsyncMenuScreen(Screen):
     fieldsList = ObjectProperty()
     selectedField = ObjectProperty()
-    houseLevel = ObjectProperty()
+    buttonText = StringProperty()
+    screenTitle = StringProperty()
 
     def __init__(self, **kwargs):
+        super(AsyncMenuScreen, self).__init__(**kwargs)
+        self.app = App.get_running_app()
+        self.gameServerClient = self.app.gameServerClient
+        self.selectedNo = None
+
+    def addFields(self, fields):
+        appFields = self.app.getData('gameFields')
+        self.fieldsList.clear_widgets()
+        for fieldNo in sorted(fields, key=int):
+            self.fieldsList.add_widget(
+                BuyHouseButton(fieldNo, str(appFields[int(fieldNo)]['name']), self.updateSelectedField))
+
+    def updateSelectedField(self, btn):
+        self.selectedNo = btn.fieldNo
+        self.selectedField.text = "Selected: %s" % btn.fieldName
+
+    def execute(self):
+        moveRequest = self.getMoveRequest(self.selectedNo)
+        if self.selectedNo and moveRequest:
+            self.gameServerClient.send(moveRequest)
+
+    def getMoveRequest(self, selectedNo):
+        pass
+
+    def goBack(self):
+        self.manager.loadMainScreen()
+
+
+class BuyHouseScreen(AsyncMenuScreen):
+    def __init__(self, **kwargs):
+        self.buttonText = "BUY"
+        self.screenTitle = "Buy a house"
         super(BuyHouseScreen, self).__init__(**kwargs)
-        self.app = App.get_running_app()
-        self.gameServerClient = self.app.gameServerClient
-        self.selectedNo = None
 
-    def addFields(self, fields):
-        appFields = self.app.getData('gameFields')
-        self.fieldsList.clear_widgets()
-        for fieldNo in sorted(fields, key=int):
-            self.fieldsList.add_widget(
-                BuyHouseButton(fieldNo, str(appFields[int(fieldNo)]['name']), self.updateSelectedField))
-
-    def updateSelectedField(self, btn):
-        self.selectedNo = btn.fieldNo
-        self.selectedField.text = "Selected: %s" % btn.fieldName
-
-    def doBuy(self):
-        if self.selectedNo:
-            try:
-                self.gameServerClient.send(GameMoveRequest.buyHouseMove(self.selectedNo, int(self.houseLevel.text)))
-            except ValueError:
-                pass
-
-    def goBack(self):
-        self.manager.loadMainScreen()
+    def getMoveRequest(self, selectedNo):
+        return GameMoveRequest.buyHouseMove(selectedNo)
 
 
-class SellHouseScreen(Screen):
-    fieldsList = ObjectProperty()
-    selectedField = ObjectProperty()
-
+class SellHouseScreen(AsyncMenuScreen):
     def __init__(self, **kwargs):
+        self.buttonText = "SELL"
+        self.screenTitle = "Sell a house"
         super(SellHouseScreen, self).__init__(**kwargs)
-        self.app = App.get_running_app()
-        self.gameServerClient = self.app.gameServerClient
-        self.selectedNo = None
 
-    def addFields(self, fields):
-        appFields = self.app.getData('gameFields')
-        self.fieldsList.clear_widgets()
-        for fieldNo in sorted(fields, key=int):
-            self.fieldsList.add_widget(
-                BuyHouseButton(fieldNo, str(appFields[int(fieldNo)]['name']), self.updateSelectedField))
+    def getMoveRequest(self, selectedNo):
+        return GameMoveRequest.sellHouseMove(selectedNo)
 
-    def updateSelectedField(self, btn):
-        self.selectedNo = btn.fieldNo
-        self.selectedField.text = "Selected: %s" % btn.fieldName
 
-    def doSell(self):
-        if self.selectedNo:
-            self.gameServerClient.send(GameMoveRequest.sellHouseMove(self.selectedNo))
+class MortgageSellScreen(AsyncMenuScreen):
+    def __init__(self, **kwargs):
+        self.buttonText = "MORTGAGE"
+        self.screenTitle = "Mortgage"
+        super(MortgageSellScreen, self).__init__(**kwargs)
 
-    def goBack(self):
-        self.manager.loadMainScreen()
+    def getMoveRequest(self, selectedNo):
+        return GameMoveRequest.mortgageSellMove(selectedNo)
+
+
+class MortgageLiftScreen(AsyncMenuScreen):
+    def __init__(self, **kwargs):
+        self.buttonText = "LIFT MORTGAGE"
+        self.screenTitle = "Lift the mortgage"
+        super(MortgageLiftScreen, self).__init__(**kwargs)
+
+    def getMoveRequest(self, selectedNo):
+        return GameMoveRequest.mortgageLiftMove(selectedNo)
 
 
 class BuyHouseButton(Button):

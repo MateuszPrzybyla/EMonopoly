@@ -1,3 +1,5 @@
+from kivy.graphics.context_instructions import Color
+from kivy.graphics.vertex_instructions import Line
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -86,6 +88,15 @@ class CityField(BoxLayout):
         if playerNo in self.playerMarkers:
             self.playerMarkerArea.clear_widgets(children=[self.playerMarkers[playerNo]])
 
+    def drawMortgage(self, isMortgage):
+        if isMortgage:
+            with self.canvas.after:
+                Color(0, 0, 0, mode='rgb')
+                Line(points=(self.pos[0], self.pos[1], self.pos[0] + self.size[0], self.pos[1] + self.size[1]), width=1)
+                Line(points=(self.pos[0], self.pos[1] + self.size[1], self.pos[0] + self.size[0], self.pos[1]), width=1)
+        else:
+            self.canvas.after.clear()
+
 
 class WestCityField(CityField):
     def createPlayerMarker(self, playerNo, hexColor):
@@ -151,6 +162,16 @@ class SpecialField(BoxLayout):
     def removePlayerFromField(self, playerNo):
         if playerNo in self.playerMarkers:
             self.playerMarkerArea.clear_widgets(children=[self.playerMarkers[playerNo]])
+
+    def drawMortgage(self, isMortgage):
+        if isMortgage:
+            with self.canvas.after:
+                Color(0, 0, 0, mode='rgb')
+                Line(points=(self.pos[0], self.pos[1], self.pos[0] + self.size[0], self.pos[1] + self.size[1]), width=1)
+                Line(points=(self.pos[0], self.pos[1] + self.size[1], self.pos[0] + self.size[0], self.pos[1]), width=1)
+        else:
+            self.canvas.after.clear()
+
 
 
 class SpecialEastField(SpecialField):

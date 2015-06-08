@@ -42,17 +42,30 @@ class GameMoveRequest(Request):
         return GameMoveRequest(MoveType.DRAW)
 
     @staticmethod
-    def buyHouseMove(fieldNo, houseLevel):
+    def buyHouseMove(fieldNo):
         return GameMoveRequest(MoveType.HOUSE, {
             'action': 'buy',
-            'fieldNo': int(fieldNo),
-            'houseLevel': houseLevel
+            'fieldNo': int(fieldNo)
         })
 
     @staticmethod
     def sellHouseMove(fieldNo):
         return GameMoveRequest(MoveType.HOUSE, {
             'action': 'sell',
+            'fieldNo': int(fieldNo)
+        })
+
+    @staticmethod
+    def mortgageSellMove(fieldNo):
+        return GameMoveRequest(MoveType.MORTGAGE, {
+            'action': 'sell',
+            'fieldNo': int(fieldNo)
+        })
+
+    @staticmethod
+    def mortgageLiftMove(fieldNo):
+        return GameMoveRequest(MoveType.MORTGAGE, {
+            'action': 'lift',
             'fieldNo': int(fieldNo)
         })
 

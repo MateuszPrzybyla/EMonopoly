@@ -117,6 +117,7 @@ class GameBoard(BoxLayout):
             else:
                 fieldState = fields[str(fieldNo)]
                 widgetField.markBoughtByPlayer(self.getPlayerColor(fieldState['owner']))
+                widgetField.drawMortgage(fieldState['mortgage'])
                 if isinstance(widgetField, CityField):
                     widgetField.setHouse(fieldState['houses'])
 
