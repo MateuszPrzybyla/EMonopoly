@@ -19,9 +19,11 @@ class PlayerData(object):
         return self.fieldPosition
 
     def movePlayerToField(self, fieldNumber, forward=True):
+        if fieldNumber == self.fieldPosition:
+            return fieldNumber
         change = (fieldNumber - self.fieldPosition + 40) % 40
         if not forward:
-            change = 40 - change
+            change -= 40
         self.singleMoveChanges.append(change)
         self.fieldPosition = fieldNumber
         return self.fieldPosition

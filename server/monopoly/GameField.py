@@ -15,7 +15,7 @@ class GameField(object):
         return not self.owner and self.houses == 0 and not self.mortgage
 
     def isMonopolized(self):
-        return all([field.owner == self.owner for field in self.getAssociatedFields()])
+        return all([field.owner == self.owner and self.owner for field in self.getAssociatedFields()])
 
     def getFee(self, diceResult, fixedCoeff=None):
         if self.model.type == FieldType.TAX:
@@ -25,6 +25,8 @@ class GameField(object):
         if self.model.type == FieldType.CITY:
             if self.houses == 0 and self.isMonopolized():
                 return 2 * self.model.fees[0]
+            if self.houses > 5:
+                return 0
             return self.model.fees[self.houses]
         elif self.model.type == FieldType.AIRPORT:
             return 50 * sum(field.owner == self.owner for field in self.getAssociatedFields())
@@ -47,23 +49,26 @@ class GameField(object):
         return []
 
     def canBuildHouse(self, playerId, houseChange=lambda houses: houses + 1, checkOwning=True):
-        if self.model.type != FieldType.CITY or self.houses == 5 or self.houses >= 5:
+        if self.model.type != FieldType.CITY or self.houses >= 5:
             return False
         associatedFields = self.getAssociatedFields()
         if checkOwning and any(field.owner != playerId or field.mortgage for field in associatedFields):
             return False
-        houseLevels = [houseChange(field.houses) if field == self else field.houses for field in associatedFields]
+        houseLevels = [field.houses + 1 if field == self else field.houses
+                       for field in associatedFields if field.owner == playerId]
         return max(houseLevels) - min(houseLevels) < 2
 
     def canSellHouse(self, playerId):
-        if self.houses == 0:
+        if self.model.type != FieldType.CITY or self.houses <= 0:
             return False
-        return self.canBuildHouse(playerId, lambda houses: houses - 1, checkOwning=False)
+        houseLevels = [field.houses - 1 if field == self else field.houses
+                       for field in self.getAssociatedFields() if field.owner == playerId]
+        return max(houseLevels) - min(houseLevels) < 2
 
     def sellHouse(self):
         if self.houses == 0:
             return 0
-        soldValue = int(self.model.houseCost * 0.5 * self.houses)
+        soldValue = int(self.model.houseCost * 0.5)
         self.houses -= 1
         return soldValue
 
