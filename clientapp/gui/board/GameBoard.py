@@ -91,7 +91,7 @@ class GameBoard(BoxLayout):
         gameData = data['gameData']
         for playerId, playerData in gameData['playersData'].items():
             self.movePlayerToField(playerData['position'], playerId, playerData['inJail'])
-        self.boardMenu.updateMenu(gameData['nextMove'])
+        self.boardMenu.updateMenu(gameData)
         if 'dice1' in data and 'dice2' in data and 'diceOwner' in data:
             self.diceArea.updateDice(data['dice1'], data['dice2'], data['diceOwner'])
         self.updateFieldsState(gameData['fields'])

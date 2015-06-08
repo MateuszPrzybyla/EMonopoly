@@ -46,6 +46,38 @@ class GameField(object):
             return filter(lambda field: field.model.color == self.model.color, self.fieldSet)
         return []
 
+    def canBuildHouse(self, playerId, houseLevel, checkOwning=False):
+        if self.model.type != FieldType.CITY or self.houses == 5 or houseLevel > 5:
+            return False
+        associatedFields = self.getAssociatedFields()
+        if checkOwning and any(field.owner != playerId or field.mortgage for field in associatedFields):
+            return False
+        houseLevels = [houseLevel if field == self else field.houses for field in associatedFields]
+        return max(houseLevels) - min(houseLevels) < 2
+
+    def canSellHouse(self, playerId):
+        if self.houses == 0:
+            return False
+        return self.canBuildHouse(playerId, self.houses - 1, checkOwning=False)
+
+    def sellHouse(self):
+        if self.houses == 0:
+            return 0
+        soldValue = int(self.model.houseCost * 0.5 * self.houses)
+        self.houses -= 1
+        return soldValue
+
+    def getHouseCost(self, houseLevel):
+        if houseLevel <= self.houses:
+            return 0
+        return self.model.houseCost * (houseLevel - self.houses)
+
+    def clearHouses(self):
+        value = 0
+        while self.houses > 0:
+            value += self.sellHouse()
+        return value
+
     def toDictStateOnly(self):
         return {
             'owner': self.owner,

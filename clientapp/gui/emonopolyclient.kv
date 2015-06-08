@@ -427,9 +427,19 @@
                         text: "Field details"
                 BoardMenuWrapper:
                     id: boardMenu
+                    syncMenu: syncMenu
+                    asyncMenu: asyncMenu
+                    orientation: "vertical"
                     size_hint: (.66667, 1)
                     pos_hint: {'x': .3333, 'y': 0}
-                    WaitForMove
+                    BoxLayout:
+                        id: syncMenu
+                        size_hint: (1, 0.5)
+                        orientation: "vertical"
+                        WaitForMove
+                    AsyncMenu:
+                        id: asyncMenu
+                        size_hint: (1, 0.5)
     GridLayout:
         id: gameStats
         anchor_x: 'center'
@@ -536,6 +546,95 @@
     Button:
         text: "End move"
         on_press: root.endMove()
+
+<AsyncMenu@ScreenManager>:
+    mainScreen: mainScreen
+    buyHouseScreen: buyHouseScreen
+    sellHouseScreen: sellHouseScreen
+    Screen:
+        id: mainScreen
+        name: "mainScreen"
+        BoxLayout:
+            orientation: "vertical"
+            Button:
+                text: "Build houses"
+                on_press: root.goBuyHouse()
+            Button:
+                text: "Sell houses"
+                on_press: root.goSellHouse()
+            Button:
+                text: "Mortgage"
+    BuyHouseScreen:
+        id: buyHouseScreen
+        name: "buyHouseScreen"
+    SellHouseScreen:
+        id: sellHouseScreen
+        name: "sellHouseScreen"
+
+<BuyHouseScreen@Screen>:
+    fieldsList: fieldsList
+    selectedField: selectedField
+    houseLevel: houseLevel
+    BoxLayout:
+        orientation: "vertical"
+        Button:
+            text: "Back"
+            height: 30
+            size_hint: (1, None)
+            on_press: root.goBack()
+        Label:
+            text: "Buy house"
+            height: 40
+            size_hint: (1, None)
+        GridLayout:
+            cols: 6
+            rows: 4
+            id: fieldsList
+        Label:
+            id: selectedField
+            text: ""
+            height: 40
+            size_hint: (1, None)
+        TextInput:
+            id: houseLevel
+            multiline: False
+            font_size: '20dp'
+            height: 40
+            size_hint: (1, None)
+        Button:
+            text: "BUY"
+            height: 40
+            size_hint: (1, None)
+            on_press: root.doBuy()
+
+<SellHouseScreen@Screen>:
+    fieldsList: fieldsList
+    selectedField: selectedField
+    BoxLayout:
+        orientation: "vertical"
+        Button:
+            text: "Back"
+            height: 30
+            size_hint: (1, None)
+            on_press: root.goBack()
+        Label:
+            text: "Sell house"
+            height: 40
+            size_hint: (1, None)
+        GridLayout:
+            cols: 6
+            rows: 4
+            id: fieldsList
+        Label:
+            id: selectedField
+            text: ""
+            height: 40
+            size_hint: (1, None)
+        Button:
+            text: "SELL"
+            height: 40
+            size_hint: (1, None)
+            on_press: root.doSell()
 
 <DiceArea>:
     orientation: "vertical"

@@ -10,6 +10,7 @@ class JoinServerResponseHandler(object):
     def handleRequest(self, msg, jsonMsg, gameServerSocket):
         if msg['success']:
             self.app.setData('nick', msg['responseData']['nick'])
+            self.app.setData('playerId', msg['responseData']['id'])
             self.app.changeScreen('gameRoom')
         else:
             print "JOIN_SERVER failed"

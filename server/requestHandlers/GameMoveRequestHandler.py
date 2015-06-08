@@ -39,7 +39,7 @@ class GameMoveRequestHandler(RequestHandler):
         monopolyGame = joinedRoom.game
         action = json.loads(rawMsg)['action'][5:]
         expectedMove = monopolyGame.popMove(clientPlayer, action)
-        if not expectedMove:
+        if not expectedMove and not self.isAsync(action):
             return NotEligibleForMove()
         diceResult = None
         if action == MoveType.DICE:
@@ -56,7 +56,12 @@ class GameMoveRequestHandler(RequestHandler):
             monopolyGame.doDrawMove(clientPlayer.id, expectedMove)
         elif action == MoveType.END:
             monopolyGame.doEndMove(clientPlayer.id)
+        elif action == MoveType.HOUSE:
+            monopolyGame.doHouseMove(clientPlayer.id, msg)
         print "Game moves queue (%d): %s" % (
             len(monopolyGame.nextMoves), [str(move) for move in reversed(monopolyGame.nextMoves)])
         self.gameServer.broadcastAllRoom(joinedRoom,
                                          GameStateResponse(True, "", monopolyGame.toDictStateOnly(), diceResult))
+
+    def isAsync(self, action):
+        return action in ['HOUSE']

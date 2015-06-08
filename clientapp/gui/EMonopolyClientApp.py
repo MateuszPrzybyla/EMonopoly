@@ -22,6 +22,9 @@ Factory.register('SingleRoomGameWidget', module='clientapp.gui.SingleRoomGameWid
 Factory.register('HorizontalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
 Factory.register('VerticalFieldBuildingArea', module='clientapp.gui.board.FieldBuildingArea')
 Factory.register('BoardMenu', module='clientapp.gui.board.BoardMenu')
+Factory.register('AsyncMenu', module='clientapp.gui.board.BoardMenu')
+Factory.register('BuyHouseScreen', module='clientapp.gui.board.BoardMenu')
+Factory.register('SellHouseScreen', module='clientapp.gui.board.BoardMenu')
 Factory.register('DiceArea', module='clientapp.gui.board.BoardMenu')
 Factory.register('PlayerMarker', module='clientapp.gui.board.GameField')
 

@@ -62,7 +62,7 @@ def payEachPlayer(fee):
 
 def collectFromAll(amount):
     def handler(card, game, playerId):
-        otherPlayers = filter(lambda player: player.id != playerId, game.players)
+        otherPlayers = filter(lambda player: player.id != playerId, game.activePlayers)
         game.playersData[playerId].addBalance(amount * len(otherPlayers))
         for otherPlayer in otherPlayers:
             game.playersData[otherPlayer.id].addBalance(-amount)

@@ -58,6 +58,7 @@ class GameServer(object):
                 self.connectedClients[connectedClient] = self.players[nick]
                 break
         print "Player %s joined the server" % nick
+        return self.players[nick].id
 
     def notifyPlayerLeaveServer(self, clientSocket):
         for connectedClient in self.connectedClients.keys():

@@ -1,8 +1,10 @@
 from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.screenmanager import ScreenManager, Screen
 from clientapp.requests.GameMoveRequest import GameMoveRequest
-from utils.eMonopoly import MoveType
+from utils.eMonopoly import MoveType, FieldType
 
 __author__ = 'mateusz'
 
@@ -19,28 +21,33 @@ class DiceArea(BoxLayout):
 
 
 class BoardMenuWrapper(BoxLayout):
+    syncMenu = ObjectProperty()
+    asyncMenu = ObjectProperty()
+
     def __init__(self, **kwargs):
         super(BoardMenuWrapper, self).__init__(**kwargs)
         self.app = App.get_running_app()
 
-    def updateMenu(self, nextMove):
-        self.clear_widgets()
+    def updateMenu(self, gameData):
+        nextMove = gameData['nextMove']
+        self.syncMenu.clear_widgets()
         if all([player['name'] != self.app.getData('nick') for player in nextMove['eligiblePlayers']]):
-            self.add_widget(WaitForMove())
+            self.syncMenu.add_widget(WaitForMove())
         elif nextMove['moveType'] == MoveType.DICE:
-            self.add_widget(RollTheDice())
+            self.syncMenu.add_widget(RollTheDice())
         elif nextMove['moveType'] == MoveType.BUY:
-            self.add_widget(BuyEstate(nextMove['moveData']))
+            self.syncMenu.add_widget(BuyEstate(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.FEE:
-            self.add_widget(PayFee(nextMove['moveData']))
+            self.syncMenu.add_widget(PayFee(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.JAIL:
-            self.add_widget(InJail(nextMove['moveData']))
+            self.syncMenu.add_widget(InJail(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.BID:
-            self.add_widget(Bidding(nextMove['moveData']))
+            self.syncMenu.add_widget(Bidding(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.DRAW:
-            self.add_widget(Draw(nextMove['moveData']))
+            self.syncMenu.add_widget(Draw(nextMove['moveData']))
         elif nextMove['moveType'] == MoveType.END:
-            self.add_widget(EndMove())
+            self.syncMenu.add_widget(EndMove())
+        self.asyncMenu.updateMenu(gameData)
 
 
 class BoardMenu(BoxLayout):
@@ -137,6 +144,7 @@ class Bidding(BoardMenu):
         except ValueError:
             pass
 
+
 class Draw(BoardMenu):
     cardType = ObjectProperty()
 
@@ -147,10 +155,113 @@ class Draw(BoardMenu):
     def draw(self):
         self.gameServerClient.send(GameMoveRequest.drawMove())
 
+
 class EndMove(BoardMenu):
     def endMove(self):
         self.gameServerClient.send(GameMoveRequest.endMove())
 
 
+class AsyncMenu(ScreenManager):
+    mainScreen = ObjectProperty()
+    buyHouseScreen = ObjectProperty()
+    sellHouseScreen = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super(AsyncMenu, self).__init__(**kwargs)
+        self.app = App.get_running_app()
+
+    def updateMenu(self, gameData):
+        if not isinstance(gameData['fields'], dict):
+            return
+        playerId = self.app.getData('playerId')
+        appFields = self.app.getData('gameFields')
+        ownedCities = [fieldNo for (fieldNo, fieldData) in gameData['fields'].items() if
+                       fieldData['owner'] == playerId and appFields[int(fieldNo)]['type'] == FieldType.CITY]
+        self.buyHouseScreen.addFields(ownedCities)
+        self.sellHouseScreen.addFields(ownedCities)
+
+    def loadMainScreen(self):
+        self.current = self.mainScreen.name
+
+    def goBuyHouse(self):
+        self.current = self.buyHouseScreen.name
+
+    def goSellHouse(self):
+        self.current = self.sellHouseScreen.name
+
+
+class BuyHouseScreen(Screen):
+    fieldsList = ObjectProperty()
+    selectedField = ObjectProperty()
+    houseLevel = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super(BuyHouseScreen, self).__init__(**kwargs)
+        self.app = App.get_running_app()
+        self.gameServerClient = self.app.gameServerClient
+        self.selectedNo = None
+
+    def addFields(self, fields):
+        appFields = self.app.getData('gameFields')
+        self.fieldsList.clear_widgets()
+        for fieldNo in sorted(fields, key=int):
+            self.fieldsList.add_widget(
+                BuyHouseButton(fieldNo, str(appFields[int(fieldNo)]['name']), self.updateSelectedField))
+
+    def updateSelectedField(self, btn):
+        self.selectedNo = btn.fieldNo
+        self.selectedField.text = "Selected: %s" % btn.fieldName
+
+    def doBuy(self):
+        if self.selectedNo:
+            try:
+                self.gameServerClient.send(GameMoveRequest.buyHouseMove(self.selectedNo, int(self.houseLevel.text)))
+            except ValueError:
+                pass
+
+    def goBack(self):
+        self.manager.loadMainScreen()
+
+
+class SellHouseScreen(Screen):
+    fieldsList = ObjectProperty()
+    selectedField = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super(SellHouseScreen, self).__init__(**kwargs)
+        self.app = App.get_running_app()
+        self.gameServerClient = self.app.gameServerClient
+        self.selectedNo = None
+
+    def addFields(self, fields):
+        appFields = self.app.getData('gameFields')
+        self.fieldsList.clear_widgets()
+        for fieldNo in sorted(fields, key=int):
+            self.fieldsList.add_widget(
+                BuyHouseButton(fieldNo, str(appFields[int(fieldNo)]['name']), self.updateSelectedField))
+
+    def updateSelectedField(self, btn):
+        self.selectedNo = btn.fieldNo
+        self.selectedField.text = "Selected: %s" % btn.fieldName
+
+    def doSell(self):
+        if self.selectedNo:
+            self.gameServerClient.send(GameMoveRequest.sellHouseMove(self.selectedNo))
+
+    def goBack(self):
+        self.manager.loadMainScreen()
+
+
+class BuyHouseButton(Button):
+    def __init__(self, fieldNo, fieldName, on_press_callback, **kwargs):
+        super(BuyHouseButton, self).__init__(**kwargs)
+        self.fieldNo = fieldNo
+        self.fieldName = fieldName
+        self.text = str(fieldNo)
+        self.font_size = 12
+        self.bind(on_press=on_press_callback)
+
+
 class CityFieldDetails(BoxLayout):
     pass
+
